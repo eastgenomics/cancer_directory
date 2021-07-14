@@ -1,0 +1,25 @@
+{% extends 'ngtdc_db/base.html' %}
+
+
+{% block body_block %}
+
+    <div>
+        <p>National Genomic Test Directory for Cancer</p>
+        <p>Individual Test Details:</p>
+        <br>
+
+        <p>{{ test_record.test_code }} {{ test_record.test_name }}</p>
+        ​<hr/>
+    </div>
+
+    <div>
+        <div>
+            <p>Clinical indication<br>{{ test_record.ci_code }}</p>
+            <p>Targets<br>{{test_record.targets}}</p>
+            <p>Test scope<br>{{test_record.test_scope}}</p>
+            <p>Test technology<br>{{test_record.technology}}</p>
+            <p>Eligibility criteria<br>{{test_record.eligibility}}</p>
+        </div>
+    </div>
+
+{% endblock %}
