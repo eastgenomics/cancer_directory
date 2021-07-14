@@ -4,12 +4,15 @@
 {% block body_block %}
 {% load render_table from django_tables2 %}
 
+<div style="width:90%; margin:0 auto; padding-top: 50px; padding-bottom: 50px;">
+
     <div>
-        <p>National Genomic Test Directory for Cancer</p>
+        <h1>National Genomic Test Directory for Cancer</h1><br>
     </div>
 ​​​​​​​​​​​​​
     <div>
-        <p>Search/filter genomic tests</p>
+        <h2>Search/filter genomic tests</h2><br>
+        
 
         <form method='GET'>
             {{ filter.form.as_p }}
@@ -23,12 +26,14 @@
         </form>
     </div>
 
-    <hr/>​​​​​​​​​​​​​​​​​​​<br/>
+</div>
 
-    <div>
-        {% if table %}
-            {% render_table table %}
-        {% endif %}
-    </div>
+<hr/>​​​​​​​​​​​​​​​​​​​<br/>
+
+<div>
+    {% if table %}
+        {% render_table table %}
+    {% endif %}
+</div>
 
 {% endblock %}
