@@ -46,7 +46,6 @@ class Data:
         # Create pandas object with dfs as columns A-H of each worksheet
         df_dict = pd.read_excel(filepath, sheets, usecols = 'A:H')
 
-        print('get_data.py Data.get_xl_data function completed')
         return df_dict
 
 
@@ -66,7 +65,6 @@ class Data:
             # Remove rows where all cells are blank
             data.dropna(axis = 0, how = 'all', inplace = True)
 
-        print('get_data.py Data.remove_blank_rows function completed')
         return df_dict
 
 
@@ -100,7 +98,6 @@ class Data:
 
                 i += 1
 
-        print('get_data.py Data.replace_merged_cells function completed')
         return df_dict
 
 
@@ -125,7 +122,6 @@ class Data:
             # Rename dataframe columns
             data.columns = renamed_columns
 
-        print('get_data.py Data.rename_columns function completed')
         return df_dict
 
 
@@ -147,7 +143,6 @@ class Data:
             cancer_type = str(df).strip()
             data['cancer_type'] = cancer_type
 
-        print('get_data.py Data.sheetname_as_field function completed')
         return df_dict
 
 
@@ -165,7 +160,6 @@ class Data:
         single_df = pd.concat(df_dict, ignore_index = True,
             keys = df_dict.keys())
 
-        print('get_data.py Data.combine_dataframes function completed')
         return single_df
 
 
@@ -182,7 +176,6 @@ class Data:
         # convert every cell value to a string, and strip whitespace
         single_df.applymap(lambda x: str(x).strip())
 
-        print('get_data.py Data.all_cells_to_strings function completed')
         return single_df
 
 
@@ -298,7 +291,6 @@ class Data:
                 
             i += 1
 
-        print('get_data.py Data.targets_to_lists function completed')
         return single_df
 
 
@@ -341,7 +333,6 @@ class Data:
             single_df.iloc[i, 5] = new_cell
             i += 1
 
-        print('get_data.py Data.scopes_to_lists function completed')
         return single_df
 
 
@@ -384,7 +375,6 @@ class Data:
             single_df.iloc[i, 6] = new_cell
             i += 1
 
-        print('get_data.py Data.tech_to_lists function completed')
         return single_df
 
 
@@ -464,9 +454,7 @@ class Data:
         
         # get the numbers of distinct values in each field
         for column in single_df.columns:
-            if column != 'targets' and \
-                column != 'test_scope' and \
-                column != 'technology':
+            if column != 'targets':
                 unique = single_df[column].unique()
                 count = len(unique)
                 print('\n{a} has {b} unique values'.format(a = column, b = count))

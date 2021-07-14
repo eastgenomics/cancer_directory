@@ -1,10 +1,12 @@
 import django_tables2 as tables
-from .models import GenomicTest
+from .models import LinkTestToTarget, GenomicTest
 
 
 class GenomicTestTable(tables.Table):
-    test_code = tables.LinkColumn('test_detail',
-        kwargs={"test_code": tables.A("test_code")})
+    test_code = tables.LinkColumn(
+        'test_detail',
+        kwargs={"test_code": tables.A("test_code")},
+        )
 
     class Meta:
         model = GenomicTest
@@ -17,3 +19,8 @@ class GenomicTestTable(tables.Table):
             'test_scope',
             'technology',
             ]
+
+    targets = tables.Column()
+
+    # def render_targets(self, value):
+    #     return GenomicTest.target_string()

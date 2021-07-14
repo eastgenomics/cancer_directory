@@ -5,6 +5,16 @@ from django.core.management.base import BaseCommand
 import ngtdc_db.management.commands.get_data as get_data
 import ngtdc_db.management.commands.insert as inserter
 
+from ngtdc_db.models import (
+	CancerType,
+	ClinicalIndication,
+	Scope,
+	Technology,
+    Target,
+	GenomicTest,
+	LinkTestToTarget,
+	)
+
 
 class Command(BaseCommand):
     help = "Seed the database"
@@ -30,20 +40,21 @@ class Command(BaseCommand):
         single_df = data.combine_dataframes(df_dict)
         data.all_cells_to_strings(single_df)
         data.targets_to_lists(single_df)
-        # data.scopes_to_lists(single_df)
-        # data.tech_to_lists(single_df)
-
-        print('seed.py Command.clean_data function completed')
 
         return single_df
     
 
-    # If a filepath is provided, clean the data and insert it into the database
     def handle(self, *args, **kwargs):
+        """If a filepath is provided, clean data and insert into database."""
+
         if kwargs['filepath']:
             filepath = kwargs['filepath']
 
             cleaned_df = self.clean_data(filepath[0])
+            print(
+                'Pandas dataframe created from Excel file.'\
+                'Creating records in database models.'
+                )
+
             inserter.insert_data(cleaned_df)
-        
-        print('seed.py Command.handle function completed')
+            print('Database population completed.')
