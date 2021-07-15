@@ -27,14 +27,6 @@
             </p>
 
             <p>
-                <strong>Targets</strong>
-                <br>
-                {% for record in links %}
-                    {{ record.target_id }},
-                {% endfor %}
-            </p>
-
-            <p>
                 <strong>Test Scope</strong>
                 <br>{{test_record.scope_id}}
             </p>
@@ -42,6 +34,15 @@
             <p>
                 <strong>Technology</strong>
                 <br>{{test_record.tech_id}}
+            </p>
+
+            <p>
+                <strong>Targets</strong>
+                <ul>
+                    {% for record in links %}
+                    <li>{{ record.target_id }}</li>
+                    {% endfor %}
+                </ul>
             </p>
 
             <p>
