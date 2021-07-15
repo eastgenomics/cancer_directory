@@ -1,6 +1,4 @@
 {% extends 'ngtdc_db/base.html' %}
-
-
 {% block body_block %}
 
 <div style="width:90%; margin:0 auto; padding-top: 50px; padding-bottom: 50px;">
@@ -10,17 +8,46 @@
         <h2>Individual Test Details:</h2>
         <br>
 
-        <p><strong>{{ test_record.test_code }} {{ test_record.test_name }}</strong></p>
+        <p style='text-align:center; font-size:24px'><strong>
+            {{ test_record.test_code }} {{ test_record.test_name }}
+        </strong></p>
         ​<hr/>
     </div>
 
     <div>
         <div>
-            <p>Clinical indication<br>{{ test_record.ci_code }}</p>
-            <p>Targets<br>{{test_record.targets}}</p>
-            <p>Test scope<br>{{test_record.test_scope}}</p>
-            <p>Test technology<br>{{test_record.technology}}</p>
-            <p>Eligibility criteria<br>{{test_record.eligibility}}</p>
+            <p>
+                <strong>Cancer Type</strong>
+                <br>{{ test_record.ci_code.cancer_id}}
+            </p>
+
+            <p>
+                <strong>Clinical Indication</strong>
+                <br>{{ test_record.ci_code }}
+            </p>
+
+            <p>
+                <strong>Targets</strong>
+                <br>
+                {% for record in links %}
+                    {{ record.target_id }},
+                {% endfor %}
+            </p>
+
+            <p>
+                <strong>Test Scope</strong>
+                <br>{{test_record.scope_id}}
+            </p>
+
+            <p>
+                <strong>Technology</strong>
+                <br>{{test_record.tech_id}}
+            </p>
+
+            <p>
+                <strong>Eligibility Criteria</strong>
+                <br>{{test_record.eligibility}}
+            </p>
         </div>
     </div>
 

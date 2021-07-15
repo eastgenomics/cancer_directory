@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic import ListView
 from django_tables2 import RequestConfig
 
-from .models import GenomicTest
+from .models import GenomicTest, LinkTestToTarget
 from .tables import GenomicTestTable
 from .filters import GenomicTestFilter
 
@@ -25,10 +25,15 @@ class TableListView(ListView):
 def test_detail(request, test_code):
     test_record = GenomicTest.objects.select_related(
         'ci_code',
-        'ci_code__cancer_type',
-        'test_scope',
-        'technology',
+        'ci_code__cancer_id',
+        'scope_id',
+        'tech_id',
         ).get(test_code = test_code)
+    
+    links = LinkTestToTarget.objects.filter(test_code = test_code)
 
-    return render(request, 'ngtdc_db/test_info.html',
-        {'test_record' : test_record})
+    return render(
+        request,
+        'ngtdc_db/test_info.html',
+        {'test_record' : test_record, 'links' : links},
+        )

@@ -4,7 +4,9 @@ from django.db import models
 class CancerType(models.Model):
     """Table of general cancer types (from test directory worksheet names)"""
 
-    cancer_id = models.AutoField(primary_key = True)
+    cancer_id = models.AutoField(
+        primary_key = True,
+        )
 
     cancer_type = models.CharField(
         verbose_name='Cancer Type',
@@ -17,6 +19,12 @@ class CancerType(models.Model):
 
 class ClinicalIndication(models.Model):
     """Table of clinical indication (CI) codes and names"""
+    
+    cancer_id = models.ForeignKey(
+        CancerType,
+        verbose_name='Cancer Type',
+        on_delete=models.CASCADE,
+        )
 
     ci_code = models.CharField(
         primary_key=True,
@@ -27,15 +35,9 @@ class ClinicalIndication(models.Model):
     ci_name = models.TextField(
         verbose_name='CI Name',
         )
-    
-    cancer_type = models.ForeignKey(
-        CancerType,
-        verbose_name='Cancer Type',
-        on_delete=models.CASCADE,
-        )
 
     def __str__(self):
-        return "%s %s" % (self.ci_code, self.ci_name)
+        return '{a} {b}'.format(a=self.ci_code, b=self.ci_name)
 
 
 class Scope(models.Model):
@@ -117,13 +119,13 @@ class GenomicTest(models.Model):
         verbose_name='Targets',
         )
 
-    test_scope = models.ForeignKey(
+    scope_id = models.ForeignKey(
         Scope,
         verbose_name='Test Scope',
         on_delete=models.CASCADE,
         )
 
-    technology = models.ForeignKey(
+    tech_id = models.ForeignKey(
         Technology,
         verbose_name='Technology',
         on_delete=models.CASCADE,
@@ -135,7 +137,7 @@ class GenomicTest(models.Model):
 
     def __str__(self):
         return self.test_code
-    
+
     def target_string(self):
         """Create a string of a test's targets."""
         return ', '.join([target for target in self.targets])
@@ -144,17 +146,17 @@ class GenomicTest(models.Model):
 class LinkTestToTarget(models.Model):
     """Intermediate table linking each test to its targets"""
 
-    test_target = models.ForeignKey(
-        Target,
-        verbose_name='Target',
-        on_delete=models.CASCADE,
-        )
-
     test_code = models.ForeignKey(
         GenomicTest,
         verbose_name='Test Code',
         on_delete=models.CASCADE,
         )
 
+    target_id = models.ForeignKey(
+        Target,
+        verbose_name='Target',
+        on_delete=models.CASCADE,
+        )
+
     def __str__(self):
-        return "%s %s" % (self.test_code, self.test_target)
+        return '{a} {b}'.format(a=self.test_code, b=self.target_id)
