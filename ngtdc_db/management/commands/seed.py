@@ -7,16 +7,21 @@ import ngtdc_db.management.commands.insert as inserter
 class Command(BaseCommand):
     help = "Seed the database"
     
-    # Enable passing data in a file as an argument for the seed command
     def add_arguments(self, parser):
-        parser.add_argument("-f", "--filepath", help = 'The path to the data',
-			nargs = 1)
-    
+        """Add 'filepath' argument for seed command"""
 
-    # Call the functions in get_data.py on the specified file
+        parser.add_argument(
+            "-f",
+            "--filepath",
+            help = 'The path to the data',
+			nargs = 1,
+            )
+
+
     def clean_data(self, filepath):
-        print(filepath)
+        """Call get_data.py on specified filepath. Returns dataframe."""
 
+        print(filepath)
         data = get_data.Data(filepath)
         
         df_dict = data.get_xl_data(filepath)
@@ -46,3 +51,6 @@ class Command(BaseCommand):
 
             inserter.insert_data(cleaned_df)
             print('Database population completed.')
+        
+        else:
+            print('Please supply path to file after -f or --filepath')

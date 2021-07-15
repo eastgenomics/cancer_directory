@@ -28,7 +28,7 @@ class Data:
 
 
     def get_xl_data(self, filepath):
-        """Retrieves the 5 worksheets of test information from the NGTDC.
+        """Retrieves the 5 worksheets of test data from the NGTDC.
 
         Args:
             excel_file [xlsx file]: file containing the NGTDC
@@ -40,8 +40,13 @@ class Data:
         """
 
         # Create list of df names
-        sheets = ['Solid Tumours (Adult)', 'Neurological tumours', 'Sarcomas', 
-            'Haematological Tumours', 'Paediatric']
+        sheets = [
+            'Solid Tumours (Adult)',
+            'Neurological tumours',
+            'Sarcomas',
+            'Haematological Tumours',
+            'Paediatric',
+            ]
 
         # Create pandas object with dfs as columns A-H of each worksheet
         df_dict = pd.read_excel(filepath, sheets, usecols = 'A:H')
@@ -70,8 +75,8 @@ class Data:
 
     def replace_merged_cells(self, df_dict):
         """Columns A and B (clinical indication code and name) contain merged
-        cells, which translate to 'NaN' values in df_dict. This function replaces
-        the NaN values from merged cells with the appropriate value.
+        cells, which translate to 'NaN' values in df_dict. This function
+        replaces the NaN values from merged cells with the appropriate value.
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
@@ -116,8 +121,16 @@ class Data:
             data = df_dict[df]
 
             # Create list of new column names
-            renamed_columns = ['ci_code', 'ci_name', 'test_code', 'test_name',
-                'targets', 'test_scope', 'technology', 'eligibility']
+            renamed_columns = [
+                'ci_code',
+                'ci_name',
+                'test_code',
+                'test_name',
+                'targets',
+                'test_scope',
+                'technology',
+                'eligibility',
+                ]
             
             # Rename dataframe columns
             data.columns = renamed_columns
@@ -157,14 +170,18 @@ class Data:
         """
 
         # Combine dfs
-        single_df = pd.concat(df_dict, ignore_index = True,
-            keys = df_dict.keys())
+        single_df = pd.concat(
+            df_dict,
+            ignore_index = True,
+            keys = df_dict.keys(),
+            )
 
         return single_df
 
 
     def all_cells_to_strings(self, single_df):
-        """Converts all cells in single_df into strings, strips excess whitespace.
+        """Converts all cells in single_df into strings, strips excess
+        whitespace.
 
         Args:
             single_df [pandas df]: contains NGTDC data
@@ -174,23 +191,25 @@ class Data:
         """
 
         # convert every cell value to a string, and strip whitespace
-        single_df.applymap(lambda x: str(x).strip())
+        single_df.applymap(lambda x: (str(x)).strip())
 
         return single_df
 
 
     def targets_to_lists(self, single_df):
-        """Iterates over column 4 (targets) and changes each cell to a list, each
-        element of which is a string representing a single target of the test. 
+        """Iterates over column 4 (targets) and changes each cell to a list,
+        each element of which is a string representing a single target of the
+        test.
+        
+        If a cell is empty or has awkward commas (applies to ~5 cells), the
+        cell is changed to a single-element list. 
 
-        If a cell is empty or has awkward commas (applies to ~5 cells), the cell is
-        changed to a single-element list. 
+        If a cell contains the 'PAR1 region' (applies to ~4 cells), which has
+        an associated sublist of genes, extracts this before making the new
+        list.
 
-        If a cell contains the 'PAR1 region' (applies to ~4 cells), which has an
-        associated sublist of genes, extracts this before making the new list.
-
-        Paired brackets around a target, or unpaired brackets at a target end, are
-        removed.
+        Paired brackets around a target, or unpaired brackets at a target end,
+        are removed.
 
         Converts all list elements to uppercase to avoid duplication issues
         (e.g. '1q2' and '1Q2').
@@ -228,7 +247,7 @@ class Data:
                 par1_region = 'PAR1 REGION (CRLF2, CSF2RA, IL3RA)'
                 if par1_region in uppercase:                
 
-                    # Add it to new list separately and remove from the old list
+                    # Add to new list separately and remove from the old list
                     new_cell_contents.append(par1_region)
                     cell_contents = uppercase.replace(par1_region, '')
 
@@ -237,7 +256,8 @@ class Data:
 
                 # If the cell contains unnecessary preamble, remove it
                 if 'TO INCLUDE DETECTION OF' in cell_contents:
-                    to_split = cell_contents.replace('TO INCLUDE DETECTION OF', '')
+                    to_split = cell_contents.replace(
+                        'TO INCLUDE DETECTION OF', '')
 
                 elif 'TO INCLUDE:' in cell_contents:
                     to_split = cell_contents.replace('TO INCLUDE:', '')
@@ -296,14 +316,14 @@ class Data:
 
     def scopes_to_lists(self, single_df):
         """Iterates over column 5 (test_scope) and changes each cell to a list,
-        each element of which is a string representing a single scope of the test.
-        If a cell is empty, it is changed to a single-element list. 
+        each element of which is a string representing a single scope of the
+        test. If a cell is empty, it is changed to a single-element list. 
 
         Args:
             single_df [pandas df]: contains NGTDC data
 
         Returns:
-            single_df [pandas df]: cells in column 5 are now lists of test scopes
+            single_df [pandas df]: cells in column 5 are now lists
         """
 
         scopes_column = single_df.iloc[:, 5]
@@ -338,14 +358,14 @@ class Data:
 
     def tech_to_lists(self, single_df):
         """Iterates over column 6 (technology) and changes each cell to a list,
-        each element of which is a string representing a single technology. If a
-        cell is empty, it is changed to a single-element list. 
+        each element of which is a string representing a single technology. If
+        a cell is empty, it is changed to a single-element list. 
 
         Args:
             single_df [pandas df]: contains NGTDC data
 
         Returns:
-            single_df [pandas df]: cells in column 6 are now lists of technologies
+            single_df [pandas df]: cells in column 6 are now lists
         """
 
         tech_column = single_df.iloc[:, 6]
@@ -421,7 +441,7 @@ class Data:
                 print('{a} has length {b}, {c} are empty'\
                     .format(a=field, b=elements, c=empty))
 
-            # check that in each row, ci_code and test_code have the same number
+            # check that in each row, ci_code no. == test_code no.
             for i in range(len(data['test_code'])):
                 ci_no_m = data.iloc[i, 0].replace('M', '')
                 test_no_m = data.iloc[i, 2].replace('M', '')
@@ -457,7 +477,9 @@ class Data:
             if column != 'targets':
                 unique = single_df[column].unique()
                 count = len(unique)
-                print('\n{a} has {b} unique values'.format(a = column, b = count))
+                print(
+                    '\n{a} has {b} unique values'.format(a = column, b = count)
+                    )
                 print(unique[:20])
             
             else:
@@ -467,7 +489,9 @@ class Data:
                         if element not in unique:
                             unique.append(element)
                 count = len(unique)
-                print('\n{a} has {b} unique values'.format(a = column, b = count))
+                print(
+                    '\n{a} has {b} unique values'.format(a = column, b = count)
+                    )
                 print(unique[:20])
 
         # # check list of individual targets
