@@ -1,5 +1,4 @@
 import pandas
-
 from django.contrib.auth.models import User
 
 from ngtdc_db.models import (

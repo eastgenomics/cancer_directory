@@ -1,19 +1,7 @@
 import pandas as pd
-
 from django.core.management.base import BaseCommand
-
 import ngtdc_db.management.commands.get_data as get_data
 import ngtdc_db.management.commands.insert as inserter
-
-from ngtdc_db.models import (
-	CancerType,
-	ClinicalIndication,
-	Scope,
-	Technology,
-    Target,
-	GenomicTest,
-	LinkTestToTarget,
-	)
 
 
 class Command(BaseCommand):

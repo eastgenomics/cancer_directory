@@ -35,9 +35,11 @@ class GenomicTestFilter(django_filters.FilterSet):
         field_name='targets__target',
         label='Targets',
         lookup_expr='icontains',
+        distinct = True,
         )
 
 
     class Meta:
         model = GenomicTest
         fields = ['ci_code__cancer_id', 'scope_id', 'tech_id']
+        
