@@ -153,8 +153,9 @@ class Data:
         for df in df_dict.keys():
             data = df_dict[df]
 
-            # Create new column 'cancer_type', set every cell to worksheet name
             cancer_type = str(df).strip()
+
+            # Create new column 'cancer_type', set every cell to worksheet name
             data['cancer_type'] = cancer_type
 
         return df_dict
