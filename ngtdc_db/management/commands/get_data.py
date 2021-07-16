@@ -117,20 +117,20 @@ class Data:
             df_dict [dict]: columns renamed in each df
         """
 
+        # Create list of new column names
+        renamed_columns = [
+            'ci_code',
+            'ci_name',
+            'test_code',
+            'test_name',
+            'targets',
+            'test_scope',
+            'technology',
+            'eligibility',
+            ]
+
         for df in df_dict:
             data = df_dict[df]
-
-            # Create list of new column names
-            renamed_columns = [
-                'ci_code',
-                'ci_name',
-                'test_code',
-                'test_name',
-                'targets',
-                'test_scope',
-                'technology',
-                'eligibility',
-                ]
             
             # Rename dataframe columns
             data.columns = renamed_columns
@@ -149,10 +149,11 @@ class Data:
             df_dict [dict]: new cancer type field added to each dataframe
         """
 
+        # Use df_dict.keys to access worksheet names
         for df in df_dict.keys():
             data = df_dict[df]
 
-            # create a new field, set every cell in it to the df name
+            # Create new column 'cancer_type', set every cell to worksheet name
             cancer_type = str(df).strip()
             data['cancer_type'] = cancer_type
 
@@ -169,7 +170,7 @@ class Data:
             single_df [pandas df]: created by concatenating dfs in df_dict
         """
 
-        # Combine dfs
+        # Combine all dataframes from df_dict into one
         single_df = pd.concat(
             df_dict,
             ignore_index = True,
@@ -191,34 +192,32 @@ class Data:
         """
 
         # convert every cell value to a string, and strip whitespace
-        single_df.applymap(lambda x: (str(x)).strip())
+        single_df.applymap(lambda x: str(x).strip())
 
         return single_df
 
 
     def targets_to_lists(self, single_df):
-        """Iterates over column 4 (targets) and changes each cell to a list,
-        each element of which is a string representing a single target of the
-        test.
-        
-        If a cell is empty or has awkward commas (applies to ~5 cells), the
-        cell is changed to a single-element list. 
+        """Each cell in column 4 ('targets') is currently a string, and needs
+        to be converted into a list. Each element of the list should be a
+        string representing a single target from that cell.
 
-        If a cell contains the 'PAR1 region' (applies to ~4 cells), which has
-        an associated sublist of genes, extracts this before making the new
-        list.
+        e.g. 'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
 
-        Paired brackets around a target, or unpaired brackets at a target end,
-        are removed.
+        Text is converted to uppercase to avoid duplication issues (e.g. '1q2'
+        vs. '1Q2').
 
-        Converts all list elements to uppercase to avoid duplication issues
-        (e.g. '1q2' and '1Q2').
+        Some cells are awkward and need to be managed separately:
+        -Empty cells become ['NOT APPLICABLE']
+        -Targets which contain sub-lists have to be kept as a whole string
+        -Paired brackets around a target, or unpaired brackets at a target end,
+        are removed
 
         Args:
             single_df [pandas df]: contains NGTDC data
 
         Returns:
-            single_df [pandas df]: cells in column 4 are now lists of targets
+            single_df [pandas df]: cells in column 4 are now lists
         """
 
         targets_column = single_df.iloc[:, 4]
@@ -227,9 +226,10 @@ class Data:
         for cell in targets_column:
             uppercase = str(cell).upper()
 
-            # If a cell is empty, make it a single-element list
-            if (pd.isna(cell)):
+            # If a cell is empty, give it a set value
+            if pd.isna(cell):
                 new_cell_contents = ['NOT APPLICABLE']
+
 
             # If splitting on ',' is a problem, take the whole cell
             # (Note: must be 'types' rather than 'type' to exclude 'karyotype')
@@ -239,20 +239,26 @@ class Data:
 
                 new_cell_contents = [uppercase]
 
+
             # For cells which are a 'standard' list of targets:
             else:
                 new_cell_contents = []
 
-                # If a cell contains the PAR1 region,
+
+                # If a cell contains the PAR1 region (awkward due to commas),
                 par1_region = 'PAR1 REGION (CRLF2, CSF2RA, IL3RA)'
+
                 if par1_region in uppercase:                
 
-                    # Add to new list separately and remove from the old list
+                    # Add this region to the cell's new list separately
                     new_cell_contents.append(par1_region)
+
+                    # Remove it from the old cell value
                     cell_contents = uppercase.replace(par1_region, '')
 
                 else:
                     cell_contents = uppercase
+
 
                 # If the cell contains unnecessary preamble, remove it
                 if 'TO INCLUDE DETECTION OF' in cell_contents:
@@ -271,14 +277,16 @@ class Data:
                 else:
                     to_split = cell_contents
 
-                # Split the cell into a list on a comma delimiter
+
+                # Split cell contents into a list on a comma delimiter
                 old_cell_target_list = to_split.split(',')
 
                 for element in old_cell_target_list:
-                    # Strip whitepace, then skip any blank elements
+                    # Strip whitespace, then skip any blank elements
                     stripped = element.strip()
                     if stripped == '':
                         continue
+
 
                     # If an element is contained in  brackets, remove them
                     elif ((stripped[0] == '(') and (stripped[-1] == ')')) or \
@@ -301,7 +309,8 @@ class Data:
                         target = stripped[:-1]
                         new_cell_contents.append(target)
 
-                    # Otherwise just append to new_cell_contents
+
+                    # Otherwise just append to cell's new list
                     else:
                         target = stripped
                         new_cell_contents.append(target)
@@ -315,7 +324,9 @@ class Data:
 
 
     def scopes_to_lists(self, single_df):
-        """Iterates over column 5 (test_scope) and changes each cell to a list,
+        """NOT CURRENTLY IN USE
+        
+        Iterates over column 5 (test_scope) and changes each cell to a list,
         each element of which is a string representing a single scope of the
         test. If a cell is empty, it is changed to a single-element list. 
 
@@ -357,7 +368,9 @@ class Data:
 
 
     def tech_to_lists(self, single_df):
-        """Iterates over column 6 (technology) and changes each cell to a list,
+        """NOT CURRENTLY IN USE
+        
+        Iterates over column 6 (technology) and changes each cell to a list,
         each element of which is a string representing a single technology. If
         a cell is empty, it is changed to a single-element list. 
 
