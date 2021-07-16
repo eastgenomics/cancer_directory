@@ -38,7 +38,7 @@ class Command(BaseCommand):
         data.remove_blank_rows(df_dict)
         data.replace_merged_cells(df_dict)
         data.rename_columns(df_dict)
-        data.sheetname_as_field(df_dict)
+        data.add_new_fields(df_dict)
 
         # Functions which apply to a single consolidated dataframe
         single_df = data.combine_dataframes(df_dict)

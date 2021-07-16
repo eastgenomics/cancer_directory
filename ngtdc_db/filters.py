@@ -51,4 +51,6 @@ class GenomicTestFilter(django_filters.FilterSet):
             'ci_code__cancer_id',
             'scope_id',
             'tech_id',
+            'inhouse_id',
+            'provided_id',
             ]

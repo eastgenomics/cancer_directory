@@ -28,6 +28,8 @@ def test_detail(request, test_code):
         'ci_code__cancer_id',
         'scope_id',
         'tech_id',
+        'inhouse_id',
+        'provided_id',
         ).get(test_code = test_code)
     
     links = LinkTestToTarget.objects.filter(test_code = test_code)

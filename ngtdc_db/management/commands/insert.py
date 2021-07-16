@@ -6,6 +6,8 @@ from ngtdc_db.models import (
 	ClinicalIndication,
 	Scope,
 	Technology,
+	InHouseTest,
+	CurrentlyProvided,
     Target,
 	GenomicTest,
 	LinkTestToTarget,
@@ -23,19 +25,29 @@ def insert_data(cleaned_data):
 			cancer_type = row['cancer_type'],
 		)
 
-		# Loop through row test scopes list to populate test scope table
+		# Populate test scopes table
 		test_scope, created = Scope.objects.get_or_create(
 			test_scope = row['test_scope'],
 		)
 
-		# Loop through row technologies list to populate technology table
+		# Populate technologies table
 		technology, created = Technology.objects.get_or_create(
 			technology = row['technology'],
 		)
 
+		# Populate in-house tests table
+		inhouse, created = InHouseTest.objects.get_or_create(
+			inhouse = row['in_house_test'],
+		)
+
+		# Populate currently provided table
+		provided, created = CurrentlyProvided.objects.get_or_create(
+			provided = row['currently_provided'],
+		)
+
 		# Populate clinical indications table
 		ci, created = ClinicalIndication.objects.get_or_create(
-			cancer_type = cancer_type,
+			cancer_id = cancer_type,
 			ci_code = row['ci_code'],
 			ci_name = row['ci_name'],
 		)
@@ -45,9 +57,11 @@ def insert_data(cleaned_data):
 			ci_code = ci,
 			test_code = row['test_code'],
 			test_name = row['test_name'],
-			test_scope = test_scope,
-			technology = technology,
+			scope_id = test_scope,
+			tech_id = technology,
+			inhouse_id = inhouse,
 			eligibility = row['eligibility'],
+			provided_id = provided,
 			)
 
 		# Populate target and LinkTestToTarget tables
@@ -58,5 +72,5 @@ def insert_data(cleaned_data):
 
 			link, created = LinkTestToTarget.objects.get_or_create(
 				test_code = genomic_test,
-				test_target = target,
+				target_id = target,
 				)

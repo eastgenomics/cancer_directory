@@ -18,4 +18,6 @@ class GenomicTestTable(tables.Table):
             'targets',
             'scope_id__test_scope',
             'tech_id__technology',
+            'inhouse_id__inhouse',
+            'provided_id__provided',
             ]

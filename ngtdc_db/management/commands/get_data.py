@@ -138,25 +138,33 @@ class Data:
         return df_dict
 
 
-    def sheetname_as_field(self, df_dict):
-        """Creates a new field for generic cancer type in each df. Value is the
-        name of the df.
+    def add_new_fields(self, df_dict):
+        """Creates 3 additional fields for each test in each df:
+
+        -cancer_type: the name of the parent dataframe e.g. 'Sarcomas'
+        -in_house_test: currently 'Not specified' for all tests
+        -currently_provided: currently 'Not specified' for all tests
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            df_dict [dict]: new cancer type field added to each dataframe
+            df_dict [dict]: new fields added to each dataframe
         """
 
         # Use df_dict.keys to access worksheet names
         for df in df_dict.keys():
             data = df_dict[df]
 
+            # Get field value for current df
             cancer_type = str(df).strip()
+            in_house_test = 'Not specified'
+            currently_provided = 'Not specified'
 
-            # Create new column 'cancer_type', set every cell to worksheet name
+            # Create new fields and set values for every cell
             data['cancer_type'] = cancer_type
+            data['in_house_test'] = in_house_test
+            data['currently_provided'] = currently_provided
 
         return df_dict
 
