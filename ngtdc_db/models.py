@@ -186,10 +186,6 @@ class GenomicTest(models.Model):
     def __str__(self):
         return self.test_code
 
-    def target_string(self):
-        """Create a string of a test's targets."""
-        return ', '.join([target for target in self.targets])
-
 
 class LinkTestToTarget(models.Model):
     """Intermediate table linking each test to its targets"""

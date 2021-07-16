@@ -4,6 +4,8 @@ from .models import (
     ClinicalIndication,
     Scope,
     Technology,
+    InHouseTest,
+    CurrentlyProvided,
     Target,
     GenomicTest,
     LinkTestToTarget,
@@ -25,19 +27,23 @@ class GenomicTestAdmin(admin.ModelAdmin):
         'ci_code',
         'test_code',
         'test_name',
-        'target_string',
         'scope_id',
         'tech_id',
+        'inhouse_id',
         'eligibility',
+        'provided_id',
         )
+    filter_horizontal = ('targets',)
 
-    list_filter = ('scope_id', 'tech_id')
+    list_filter = ('scope_id', 'tech_id', 'inhouse_id', 'provided_id')
 
 
 admin.site.register(CancerType)
 admin.site.register(ClinicalIndication, CiAdmin)
 admin.site.register(Scope)
 admin.site.register(Technology)
+admin.site.register(InHouseTest)
+admin.site.register(CurrentlyProvided)
 admin.site.register(Target)
 admin.site.register(GenomicTest, GenomicTestAdmin)
 admin.site.register(LinkTestToTarget)
