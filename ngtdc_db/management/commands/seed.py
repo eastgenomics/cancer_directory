@@ -1,6 +1,6 @@
 import pandas as pd
 from django.core.management.base import BaseCommand
-import ngtdc_db.management.commands.get_data as get_data
+import ngtdc_db.management.commands.get_data_v1 as get_data
 import ngtdc_db.management.commands.insert as inserter
 
 
@@ -36,8 +36,8 @@ class Command(BaseCommand):
         # Functions which apply to a dictionary of pandas dataframes
         df_dict = data.get_xl_data(filepath)
         data.remove_blank_rows(df_dict)
-        data.replace_merged_cells(df_dict)
         data.rename_columns(df_dict)
+        data.replace_merged_cells(df_dict)
         data.add_new_fields(df_dict)
 
         # Functions which apply to a single consolidated dataframe
