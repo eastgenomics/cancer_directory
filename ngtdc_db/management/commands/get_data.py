@@ -69,39 +69,7 @@ class Data:
 
             # Remove rows where all cells are blank
             data.dropna(axis = 0, how = 'all', inplace = True)
-
-        return df_dict
-
-
-    def replace_merged_cells(self, df_dict):
-        """Columns A and B (clinical indication code and name) contain merged
-        cells, which translate to 'NaN' values in df_dict. This function
-        replaces the NaN values from merged cells with the appropriate value.
-
-        Args:
-            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
-
-        Returns:
-            df_dict [dict]: empty cells caused by merging given relevant values
-        """
-
-        for df in df_dict:
-            data = df_dict[df]
-            ci_codes_column = data.iloc[:, 0]
-
-            i = 0
-            for cell in ci_codes_column:
-
-                # if cell was merged in the xls worksheet,
-                if pd.isna(cell):
-
-                    # update cell value to that of the cell above it
-                    data.iloc[i, 0] = data.iloc[i-1, 0]
-
-                    # similarly update adjacent cell in column 1 (ci_name)
-                    data.iloc[i, 1] = data.iloc[i-1, 1]
-
-                i += 1
+            data.index = range(len(data))
 
         return df_dict
 
@@ -134,6 +102,39 @@ class Data:
             
             # Rename dataframe columns
             data.columns = renamed_columns
+
+        return df_dict
+
+
+    def replace_merged_cells(self, df_dict):
+        """Columns A and B (clinical indication code and name) contain merged
+        cells, which translate to 'NaN' values in df_dict. This function
+        replaces the NaN values from merged cells with the appropriate value.
+
+        Args:
+            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+
+        Returns:
+            df_dict [dict]: empty cells caused by merging given relevant values
+        """
+
+        for df in df_dict:
+            data = df_dict[df]
+            ci_codes_column = data.loc[:, 'ci_code']
+
+            i = 0
+            for cell in ci_codes_column:
+
+                # if cell was merged in the xls worksheet,
+                if pd.isna(cell):
+
+                    # update cell value to that of the cell above it
+                    data.loc[i, 'ci_code'] = data.loc[i-1, 'ci_code']
+
+                    # similarly update adjacent cell in column 1 (ci_name)
+                    data.loc[i, 'ci_name'] = data.loc[i-1, 'ci_name']
+
+                i += 1
 
         return df_dict
 
@@ -229,7 +230,7 @@ class Data:
             single_df [pandas df]: cells in column 4 are now lists
         """
 
-        targets_column = single_df.iloc[:, 4]
+        targets_column = single_df.loc[:, 'targets']
 
         i = 0
         for cell in targets_column:
@@ -244,7 +245,7 @@ class Data:
             # (Note: must be 'types' rather than 'type' to exclude 'karyotype')
             elif ('TRANSCRIPTS' in uppercase) or \
                 ('TYPES' in uppercase) or \
-                ('MLPA' in single_df.iloc[i, 6]):
+                ('MLPA' in single_df.loc[i, 'technology']):
 
                 new_cell_contents = [uppercase]
 
@@ -325,7 +326,7 @@ class Data:
                         new_cell_contents.append(target)
 
             # Replace cell's old string value with new_cell_contents list
-            single_df.iloc[i, 4] = new_cell_contents
+            single_df.loc[i, 'targets'] = new_cell_contents
                 
             i += 1
 
@@ -346,7 +347,7 @@ class Data:
             single_df [pandas df]: cells in column 5 are now lists
         """
 
-        scopes_column = single_df.iloc[:, 5]
+        scopes_column = single_df.loc[:, 'test_scope']
 
         i = 0
         for cell in scopes_column:
@@ -370,7 +371,7 @@ class Data:
                 stripped = cell.strip()
                 new_cell.append(stripped)
             
-            single_df.iloc[i, 5] = new_cell
+            single_df.loc[i, 'test_scope'] = new_cell
             i += 1
 
         return single_df
@@ -390,7 +391,7 @@ class Data:
             single_df [pandas df]: cells in column 6 are now lists
         """
 
-        tech_column = single_df.iloc[:, 6]
+        tech_column = single_df.loc[:, 'technology']
 
         i = 0
         for cell in tech_column:
@@ -414,7 +415,7 @@ class Data:
                 stripped = cell.strip()
                 new_cell.append(stripped)
             
-            single_df.iloc[i, 6] = new_cell
+            single_df.loc[i, 'technology'] = new_cell
             i += 1
 
         return single_df
@@ -441,8 +442,8 @@ class Data:
             print('\n{df}\n--------------------------'.format(df=df))
 
             string_fields = ['cancer_type', 'ci_code', 'ci_name', 'test_code',
-                    'test_name', 'eligibility']
-            list_fields = ['targets', 'test_scope', 'technology']
+                    'test_name', 'test_scope', 'technology', 'eligibility']
+            list_fields = ['targets']
 
             # print total, empty and unique cells
             for field in string_fields:
@@ -465,8 +466,8 @@ class Data:
 
             # check that in each row, ci_code no. == test_code no.
             for i in range(len(data['test_code'])):
-                ci_no_m = data.iloc[i, 0].replace('M', '')
-                test_no_m = data.iloc[i, 2].replace('M', '')
+                ci_no_m = data.loc[i, 'ci_code'].replace('M', '')
+                test_no_m = data.loc[i, 'test_code'].replace('M', '')
                 test_no_decimal = test_no_m.split('.')
 
                 if ci_no_m != test_no_decimal[0]:
@@ -487,8 +488,8 @@ class Data:
 
         # check that in each row, ci_code and test_code have the same number
         for i in range(len(single_df['test_code'])):
-            cc_no_m = single_df.iloc[i, 0].replace('M', '')
-            tc_no_m = single_df.iloc[i, 2].replace('M', '')
+            cc_no_m = single_df.loc[i, 'ci_code'].replace('M', '')
+            tc_no_m = single_df.loc[i, 'test_code'].replace('M', '')
             tc_no_decimal = tc_no_m.split('.')
 
             if cc_no_m != tc_no_decimal[0]:
@@ -518,7 +519,7 @@ class Data:
 
         # # check list of individual targets
         # targets = []
-        # for cell in single_df.iloc[:, 4]:
+        # for cell in single_df.loc[:, 'targets']:
         #     for target in cell:
         #         if target not in targets:
         #             targets.append(target)
