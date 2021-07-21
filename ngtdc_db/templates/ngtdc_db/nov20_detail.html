@@ -46,9 +46,9 @@
             </p>
 
             <p>
-                <strong>Targets ({{ links.count }})</strong>
+                <strong>Essential Targets ({{ essential_links.count }})</strong>
                 <ul>
-                    {% for record in links %}
+                    {% for record in essential_links %}
                     <li>{{ record.target_id }}</li>
                     {% endfor %}
                 </ul>

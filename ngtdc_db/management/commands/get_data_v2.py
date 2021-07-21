@@ -1,7 +1,7 @@
 #!usr/bin/env python
 
 """
-National Genomic Test Directory for Cancer (NGTDC) *VERSION 1*
+National Genomic Test Directory for Cancer (NGTDC) *VERSION 2*
 
 Script function:
     Extract data from the NGTDC
@@ -33,25 +33,25 @@ class Data:
         """Retrieves the 5 worksheets of test data from the NGTDC.
 
         Args:
-            excel_file [xlsx file]: file containing the NGTDC
+            filepath: path to xlsx file containing the NGTDC
 
         Returns:
             df_dict [dict]: dictionary of pandas DataFrames
-                keys: df name e.g. 'Sarcomas'
-                values: dataframe of columns A-H from relevant worksheet
+                key: df name e.g. 'Sarcomas'
+                value: dataframe of columns B-P from relevant worksheet
         """
 
-        # Create list of df names
+        # Create list of worksheet names
         sheets = [
-            'Solid Tumours (Adult)',
-            'Neurological tumours',
-            'Sarcomas',
-            'Haematological Tumours',
-            'Paediatric',
+            'Solid Tumours (2)',
+            'Neurological tumours (2)',
+            'Sarcoma (2)',
+            'Haematological (2)',
+            'Paediatric (2)',
             ]
 
-        # Create pandas object with dfs as columns A-H of each worksheet
-        df_dict = pd.read_excel(filepath, sheets, usecols = 'A:H')
+        # Create pandas object with dfs as columns A-P of each worksheet
+        df_dict = pd.read_excel(filepath, sheets, usecols = 'B:P')
 
         return df_dict
 
@@ -91,14 +91,21 @@ class Data:
 
         # Create list of new column names
         renamed_columns = [
+            'cancer_type',
+            'specialist_group',
             'ci_code',
             'ci_name',
             'test_code',
             'test_name',
             'targets_essential',
+            'targets_desirable',
             'test_scope',
             'technology',
+            'family_structure',
+            'commissioning',
             'eligibility',
+            'citt_comment',
+            'tt_code',
             ]
 
         for df in df_dict:
@@ -111,9 +118,10 @@ class Data:
 
 
     def replace_merged_cells(self, df_dict):
-        """Columns A and B (clinical indication code and name) contain merged
-        cells, which translate to 'NaN' values in df_dict. This function
-        replaces the NaN values from merged cells with the appropriate value.
+        """Columns B-E (tumour group, specialist test group, CI code and name)
+        contain merged cells, which translate to 'NaN' values in df_dict. This
+        function replaces the NaN values from merged cells with the appropriate
+        value.
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
@@ -135,7 +143,12 @@ class Data:
                     # update cell value to that of the cell above it
                     data.loc[i, 'ci_code'] = data.loc[i-1, 'ci_code']
 
-                    # similarly update adjacent cell in column 1 (ci_name)
+                    # similarly update adjacent cells in cols B, C, E
+                    data.loc[i, 'cancer_type'] = data.loc[i-1, 'cancer_type']
+
+                    data.loc[i, 'specialist_group'] = data.loc[i-1,
+                        'specialist_group']
+
                     data.loc[i, 'ci_name'] = data.loc[i-1, 'ci_name']
 
                 i += 1
@@ -167,10 +180,43 @@ class Data:
         return df_dict
 
 
-    def add_new_fields(self, df_dict):
-        """Creates 3 additional fields for each test in each df:
+    def TEMPORARY_FIX_BLANK_TCS(self, df_dict):
+        """Because test_code is the primary key for the GenomicTest model, all
+        records must have a unique value for this field. Version 2 of the test
+        directory is problematic because many records have a blank test code
+        value, meaning they all get assigned a non-unique value of 'Not
+        specified' (thanks version 2). There is also an issue where two
+        different tests have been assigned the test code 'M150.6'. This
+        function removes any records where the test code is blank, and the two
+        tests with the same test code.
 
-        -cancer_type: the name of the parent dataframe e.g. 'Sarcomas'
+        Args:
+            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+
+        Returns:
+            df_dict [dict]: rows with test code = 'Not specified' removed
+        """
+
+        for df in df_dict:
+            data = df_dict[df]
+
+            # If a row has a test code value of 'Not specified', drop the row
+            data.drop(data.loc[data['test_code']=='Not specified'].index,
+                inplace=True)
+
+            # If a row has a test code value of 'M150.6', drop the row
+            data.drop(data.loc[data['test_code']=='M150.6'].index,
+                inplace=True)
+
+            # Reset row index to be a consistent series
+            data = data.reset_index
+
+        return df_dict
+
+
+    def add_new_fields(self, df_dict):
+        """Creates 2 additional fields for each test in each df:
+
         -in_house_test: currently 'Not specified' for all tests
         -currently_provided: currently 'Not specified' for all tests
 
@@ -181,16 +227,12 @@ class Data:
             df_dict [dict]: new fields added to each dataframe
         """
 
-        # Use df_dict.keys to access worksheet names
-        for df in df_dict.keys():
+        for df in df_dict:
             data = df_dict[df]
 
-            # Get field value for current df
-            cancer_type = str(df).strip()
             default_value = 'Not specified'
 
-            # Create new fields and set values for every cell
-            data['cancer_type'] = cancer_type
+            # Create new fields and set default values for every cell
             data['in_house_test'] = default_value
             data['currently_provided'] = default_value
 
@@ -235,11 +277,12 @@ class Data:
 
 
     def targets_to_lists(self, single_df):
-        """Each cell in column 4 ('targets') is currently a string, and needs
-        to be converted into a list. Each element of the list should be a
-        string representing a single target from that cell.
-
-        e.g. 'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
+        """Each cell in 'targets_essential' and 'targets_desirable' is
+        currently a string, and needs to be converted into a list. Each element
+        of the list should be a string representing a single target from that
+        cell, e.g.
+        
+        'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
 
         Text is converted to uppercase to avoid duplication issues (e.g. '1q2'
         vs. '1Q2').
@@ -254,108 +297,114 @@ class Data:
             single_df [pandas df]: contains NGTDC data
 
         Returns:
-            single_df [pandas df]: cells in column 4 are now lists
+            single_df [pandas df]: cells in targets columns are now lists
         """
 
-        targets_column = single_df['targets_essential']
+        fields = ['targets_essential', 'targets_desirable']
 
-        i = 0
-        for cell in targets_column:
-            uppercase = str(cell).upper()
+        for field in fields:
+            column = single_df[field]
+            i = 0
 
-            # If cell value isn't specified, make it a single-element list
-            if cell == 'Not specified':
-                new_cell_contents = ['Not specified',]
+            for cell in column:
+                uppercase = str(cell).upper()
 
-
-            # If splitting on ',' is a problem, take the whole cell
-            # (Note: must be 'types' rather than 'type' to exclude 'karyotype')
-            elif ('TRANSCRIPTS' in uppercase) or \
-                ('TYPES' in uppercase) or \
-                ('MLPA' in single_df.iloc[i].loc['technology']):
-
-                new_cell_contents = [uppercase]
+                # If a cell is empty, make it a single-element list
+                if cell == 'Not specified':
+                    new_cell_contents = ['Not specified',]
 
 
-            # For cells which are a 'standard' list of targets:
-            else:
-                new_cell_contents = []
+                # If splitting on ',' is a problem, take the whole cell
+                # (Note: must be 'types' not 'type', to exclude 'karyotype')
+                elif ('TRANSCRIPTS' in uppercase) or \
+                    ('TYPES' in uppercase) or \
+                    ('MLPA' in str(single_df.loc[i, 'technology'])):
+
+                    new_cell_contents = [uppercase,]
 
 
-                # If a cell contains the PAR1 region (awkward due to commas),
-                par1_region = 'PAR1 REGION (CRLF2, CSF2RA, IL3RA)'
-
-                if par1_region in uppercase:                
-
-                    # Add this region to the cell's new list separately
-                    new_cell_contents.append(par1_region)
-
-                    # Remove it from the old cell value
-                    cell_contents = uppercase.replace(par1_region, '')
-
+                # For cells which are a 'standard' list of targets:
                 else:
-                    cell_contents = uppercase
+                    new_cell_contents = []
 
 
-                # If the cell contains unnecessary preamble, remove it
-                if 'TO INCLUDE DETECTION OF' in cell_contents:
-                    to_split = cell_contents.replace(
-                        'TO INCLUDE DETECTION OF', '')
+                    # If a cell contains PAR1 region (awkward due to commas),
+                    par1_region = 'PAR1 REGION (CRLF2, CSF2RA, IL3RA)'
 
-                elif 'TO INCLUDE:' in cell_contents:
-                    to_split = cell_contents.replace('TO INCLUDE:', '')
+                    if par1_region in uppercase:                
 
-                elif 'TO INCLUDE' in cell_contents:
-                    to_split = cell_contents.replace('TO INCLUDE', '')
+                        # Add this region to the cell's new list separately
+                        new_cell_contents.append(par1_region)
 
-                elif 'E.G.' in cell_contents:
-                    to_split = cell_contents.replace('E.G.', '')
+                        # Remove it from the old cell value
+                        cell_contents = uppercase.replace(par1_region, '')
 
-                else:
-                    to_split = cell_contents
-
-
-                # Split cell contents into a list on a comma delimiter
-                old_cell_target_list = to_split.split(',')
-
-                for element in old_cell_target_list:
-                    # Strip whitespace, then skip any blank elements
-                    stripped = element.strip()
-                    if stripped == '':
-                        continue
-
-
-                    # If an element is contained in  brackets, remove them
-                    elif ((stripped[0] == '(') and (stripped[-1] == ')')) or \
-                        ((stripped[0] == '[') and (stripped[-1] == ']')):
-
-                        target = stripped[1:-1]
-                        new_cell_contents.append(target)
-
-                    # If an element starts with an unpaired bracket, remove it
-                    elif ((stripped[0] == '[') and (']' not in stripped)) or \
-                        ((stripped[0] == '(') and (')' not in stripped)):
-
-                        target = stripped[1:]
-                        new_cell_contents.append(target)
-
-                    # If an element ends with an unpaired bracket, remove it
-                    elif ((stripped[-1] == ']') and ('[' not in stripped)) or \
-                        ((stripped[-1] == ')') and ('(' not in stripped)):
-
-                        target = stripped[:-1]
-                        new_cell_contents.append(target)
-
-
-                    # Otherwise just append to cell's new list
                     else:
-                        target = stripped
-                        new_cell_contents.append(target)
+                        cell_contents = uppercase
 
-            # Replace cell's old string value with new_cell_contents list
-            single_df.iloc[i].loc['targets_essential'] = new_cell_contents
-                
-            i += 1
+
+                    # If the cell contains unnecessary preamble, remove it
+                    if 'TO INCLUDE DETECTION OF' in cell_contents:
+                        to_split = cell_contents.replace(
+                            'TO INCLUDE DETECTION OF', '')
+
+                    elif 'TO INCLUDE:' in cell_contents:
+                        to_split = cell_contents.replace('TO INCLUDE:', '')
+
+                    elif 'TO INCLUDE' in cell_contents:
+                        to_split = cell_contents.replace('TO INCLUDE', '')
+
+                    elif 'E.G.' in cell_contents:
+                        to_split = cell_contents.replace('E.G.', '')
+
+                    else:
+                        to_split = cell_contents
+
+
+                    # Split cell contents into a list on a comma delimiter
+                    old_cell_target_list = to_split.split(',')
+
+                    for element in old_cell_target_list:
+                        # Strip whitespace, then skip any blank elements
+                        stripped = element.strip()
+                        if stripped == '':
+                            continue
+
+
+                        # If element is contained in brackets, remove them
+                        elif ((stripped[0] == '(') and (stripped[-1] == ')'))\
+                                or \
+                            ((stripped[0] == '[') and (stripped[-1] == ']')):
+
+                            target = stripped[1:-1]
+                            new_cell_contents.append(target)
+
+                        # If element starts with an unpaired bracket, remove it
+                        elif ((stripped[0] == '[') and (']' not in stripped))\
+                                or \
+                            ((stripped[0] == '(') and (')' not in stripped)):
+
+                            target = stripped[1:]
+                            new_cell_contents.append(target)
+
+                        # If element ends with an unpaired bracket, remove it
+                        elif ((stripped[-1] == ']') and ('[' not in stripped))\
+                                or \
+                            ((stripped[-1] == ')') and ('(' not in stripped)):
+
+                            target = stripped[:-1]
+                            new_cell_contents.append(target)
+
+
+                        # Otherwise just append to cell's new list
+                        else:
+                            target = stripped
+                            new_cell_contents.append(target)
+
+                # Replace cell's old string value with new_cell_contents list
+                single_df.iloc[i].loc[field] = new_cell_contents
+                    
+                i += 1
 
         return single_df
 
@@ -520,7 +569,7 @@ class Data:
                     )
 
         # get the numbers of distinct values in each field
-        exclude_fields = ['targets_essential']
+        exclude_fields = ['targets_essential', 'targets_desirable']
 
         for field in single_df.columns:
             if field not in exclude_fields:

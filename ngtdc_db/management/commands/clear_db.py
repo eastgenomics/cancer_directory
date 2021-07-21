@@ -1,15 +1,21 @@
 from django.core.management.base import BaseCommand
 
 from ngtdc_db.models import (
-	CancerType,
-	ClinicalIndication,
-	Scope,
-	Technology,
+    CancerType,
+    ClinicalIndication,
+    Specialist,
+    Scope,
+    Technology,
     InHouseTest,
+    CommissioningCategory,
+    FamilyStructure,
+    CITT,
+    TT,
     CurrentlyProvided,
     Target,
-	GenomicTest,
-	LinkTestToTarget,
+    GenomicTest,
+    EssentialTargetLinks,
+    DesirableTargetLinks,
 	)
 
 
@@ -20,13 +26,19 @@ class Command(BaseCommand):
         models = [
             CancerType,
             ClinicalIndication,
+            Specialist,
             Scope,
             Technology,
             InHouseTest,
+            CommissioningCategory,
+            FamilyStructure,
+            CITT,
+            TT,
             CurrentlyProvided,
             Target,
             GenomicTest,
-            LinkTestToTarget,
+            EssentialTargetLinks,
+            DesirableTargetLinks,
             ]
 
         for model in models:

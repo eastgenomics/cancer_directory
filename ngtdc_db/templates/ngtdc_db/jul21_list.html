@@ -1,0 +1,42 @@
+{% extends 'ngtdc_db/base.html' %}
+{% block body_block %}
+{% load render_table from django_tables2 %}
+
+<div style="width:90%; margin:0 auto; padding-top: 50px; padding-bottom: 50px;">
+
+    <div>
+        <h1>National Genomic Test Directory for Cancer</h1><br>
+        <p><strong>Version currently displayed: </strong>July 2021 (most recent)</p>
+        <p>Select alternative version:</p>
+        <ul>
+            <li><a href='Nov20_version' >November 2020</a></li>
+        </ul>
+        <br>
+    </div>
+
+    <hr/>​​​​​​​​​​​​​​​​​​​<br/>
+
+    <div>
+        <h2>Search/filter genomic tests</h2><br>
+
+        <form method='GET'>
+            <strong>{{ filter.form.as_p }}</strong>
+            <input type='submit' value='Filter' />
+    
+            <br><br>
+            {{ filter.qs.count }} of {{ filter.queryset.count }} items returned.
+            <br>
+    
+            <a href='{{ request.path }}' >Clear filters</a>
+        </form>
+    </div>
+
+<hr/>​​​​​​​​​​​​​​​​​​​<br/>
+
+    {% if table %}
+        {% render_table table %}
+    {% endif %}
+    
+</div>
+
+{% endblock %}

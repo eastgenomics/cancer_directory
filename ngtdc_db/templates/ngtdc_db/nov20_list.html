@@ -6,11 +6,17 @@
 
     <div>
         <h1>National Genomic Test Directory for Cancer</h1><br>
+        <p><strong>Version currently displayed: </strong>November 2020</p>
+        <p>Select alternative version:</p>
+        <ul>
+            <li><a href='/' >July 2021 (most recent)</a></li>
+        </ul>
     </div>
 ​​​​​​​​​​​​​
+    <hr/>​​​​​​​​​​​​​​​​​​​<br/>
+
     <div>
         <h2>Search/filter genomic tests</h2><br>
-        
 
         <form method='GET'>
             <strong>{{ filter.form.as_p }}</strong>
@@ -24,14 +30,12 @@
         </form>
     </div>
 
-</div>
-
 <hr/>​​​​​​​​​​​​​​​​​​​<br/>
 
-<div>
     {% if table %}
         {% render_table table %}
     {% endif %}
+    
 </div>
 
 {% endblock %}
