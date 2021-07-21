@@ -5,12 +5,18 @@
 
     <div>
         <h1>National Genomic Test Directory for Cancer</h1>
+        <p>
+            <strong>Version currently displayed: </strong>November 2020
+        </p><br>
+
         <h2>Individual Test Details:</h2>
         <br>
 
-        <p style='text-align:center; font-size:24px'><strong>
-            {{ test_record.test_code }} {{ test_record.test_name }}
-        </strong></p>
+        <p style='text-align:center; font-size:24px'>
+            <strong>
+                {{ test_record.test_code }} {{ test_record.test_name }}
+            </strong>
+        </p>
 
         <p>
             <strong>Currently provided: </strong>{{ test_record.provided_id}}
@@ -19,46 +25,44 @@
     </div>
 
     <div>
-        <div>
-            <p>
-                <strong>Cancer Type</strong>
-                <br>{{ test_record.ci_code.cancer_id}}
-            </p>
+        <p>
+            <strong>Cancer Type</strong>
+            <br>{{ test_record.ci_code.cancer_id}}
+        </p>
 
-            <p>
-                <strong>Clinical Indication</strong>
-                <br>{{ test_record.ci_code }}
-            </p>
+        <p>
+            <strong>Clinical Indication</strong>
+            <br>{{ test_record.ci_code }}
+        </p>
 
-            <p>
-                <strong>Test Scope</strong>
-                <br>{{ test_record.scope_id }}
-            </p>
+        <p>
+            <strong>Test Scope</strong>
+            <br>{{ test_record.scope_id }}
+        </p>
 
-            <p>
-                <strong>Technology</strong>
-                <br>{{ test_record.tech_id }}
-            </p>
+        <p>
+            <strong>Technology</strong>
+            <br>{{ test_record.tech_id }}
+        </p>
 
-            <p>
-                <strong>In-House Test</strong>
-                <br>{{ test_record.inhouse_id }}
-            </p>
+        <p>
+            <strong>In-House Test</strong>
+            <br>{{ test_record.inhouse_id }}
+        </p>
 
-            <p>
-                <strong>Essential Targets ({{ essential_links.count }})</strong>
-                <ul>
-                    {% for record in essential_links %}
-                    <li>{{ record.target_id }}</li>
-                    {% endfor %}
-                </ul>
-            </p>
+        <p>
+            <strong>Essential Targets ({{ essential_links.count }})</strong>
+            <ul>
+                {% for record in essential_links %}
+                <li>{{ record.target_id }}</li>
+                {% endfor %}
+            </ul>
+        </p>
 
-            <p>
-                <strong>Eligibility Criteria</strong>
-                <br>{{ test_record.eligibility }}
-            </p>
-        </div>
+        <p>
+            <strong>Eligibility Criteria</strong>
+            <br>{{ test_record.eligibility }}
+        </p>
     </div>
 
 </div>
