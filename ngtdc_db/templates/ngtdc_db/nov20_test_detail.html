@@ -6,7 +6,8 @@
     <div>
         <h1>National Genomic Test Directory for Cancer</h1>
         <p>
-            <strong>Version currently displayed: </strong>July 2021 (most recent)
+            <strong>Version currently displayed: </strong>November 2020
+            <br><a href='/Nov20_Main_List/'>Back to table view</a>
         </p><br>
 
         <h2>Individual Test Details:</h2>
@@ -16,11 +17,6 @@
             <strong>
                 {{ test_record.test_code }} {{ test_record.test_name }}
             </strong>
-        </p>
-
-        <p>
-            <strong>Specialist Test Group</strong>
-            <br>{{ test_record.specialist_id }}
         </p>
 
         <p>
@@ -65,37 +61,8 @@
         </p>
 
         <p>
-            <strong>Desirable Targets ({{ desirable_links.count }})</strong>
-            <ul>
-                {% for record in desirable_links %}
-                <li>{{ record.target_id }}</li>
-                {% endfor %}
-            </ul>
-        </p>
-
-        <p>
-            <strong>Optimal Family Structure</strong>
-            <br>{{ test_record.family_id }}
-        </p>
-
-        <p>
-            <strong>Commissioning Category</strong>
-            <br>{{ test_record.cc_id }}
-        </p>
-
-        <p>
             <strong>Eligibility Criteria</strong>
             <br>{{ test_record.eligibility }}
-        </p>
-
-        <p>
-            <strong>CITT Comment</strong>
-            <br>{{ test_record.citt_id }}
-        </p>
-
-        <p>
-            <strong>TT Code</strong>
-            <br>{{ test_record.tt_id }}
         </p>
     </div>
 

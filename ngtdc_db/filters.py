@@ -1,11 +1,16 @@
 import django_filters
 from django import forms
-from .models import GenomicTestNov20, GenomicTestJul21
+from .models import (
+    GenomicTestNov20,
+    ClinicalIndicationNov20,
+    GenomicTestJul21,
+    ClinicalIndicationJul21,
+)
 
 
-class Jul21_Filter(django_filters.FilterSet):
+class Jul21MainFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
-        super(Jul21_Filter, self).__init__(*args, **kwargs)
+        super(Jul21MainFilter, self).__init__(*args, **kwargs)
         self.filters['ci_code__cancer_id'].label = 'Cancer Type'
 
     ci_code = django_filters.CharFilter(
@@ -58,7 +63,6 @@ class Jul21_Filter(django_filters.FilterSet):
         lookup_expr='icontains',
         )
 
-
     class Meta:
         model = GenomicTestJul21
         fields = [
@@ -70,9 +74,36 @@ class Jul21_Filter(django_filters.FilterSet):
             ]
 
 
-class Nov20_Filter(django_filters.FilterSet):
+class Jul21CIFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
-        super(Nov20_Filter, self).__init__(*args, **kwargs)
+        super(Jul21CIFilter, self).__init__(*args, **kwargs)
+        self.filters['cancer_id'].label = 'Cancer Type'
+
+    ci_code = django_filters.CharFilter(
+        field_name='ci_code',
+        label='CI Code',
+        help_text = '(Clinical indication code e.g. M1)',
+        lookup_expr='icontains',
+        )
+
+    ci_name = django_filters.CharFilter(
+        field_name='ci_name',
+        label='CI Name',
+        help_text = '(Clinical indication name e.g. Colorectal carcinoma)',
+        lookup_expr='icontains',
+        )
+
+    class Meta:
+        model = ClinicalIndicationJul21
+        fields = [
+            'cancer_id',
+            ]
+
+
+
+class Nov20MainFilter(django_filters.FilterSet):
+    def __init__(self, *args, **kwargs):
+        super(Nov20MainFilter, self).__init__(*args, **kwargs)
         self.filters['ci_code__cancer_id'].label = 'Cancer Type'
 
     ci_code = django_filters.CharFilter(
@@ -119,4 +150,30 @@ class Nov20_Filter(django_filters.FilterSet):
             'tech_id',
             'inhouse_id',
             'provided_id',
+            ]
+
+
+class Nov20CIFilter(django_filters.FilterSet):
+    def __init__(self, *args, **kwargs):
+        super(Nov20CIFilter, self).__init__(*args, **kwargs)
+        self.filters['cancer_id'].label = 'Cancer Type'
+
+    ci_code = django_filters.CharFilter(
+        field_name='ci_code',
+        label='CI Code',
+        help_text = '(Clinical indication code e.g. M1)',
+        lookup_expr='icontains',
+        )
+
+    ci_name = django_filters.CharFilter(
+        field_name='ci_name',
+        label='CI Name',
+        help_text = '(Clinical indication name e.g. Colorectal carcinoma)',
+        lookup_expr='icontains',
+        )
+
+    class Meta:
+        model = ClinicalIndicationNov20
+        fields = [
+            'cancer_id',
             ]

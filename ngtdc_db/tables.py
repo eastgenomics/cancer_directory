@@ -1,10 +1,16 @@
 import django_tables2 as tables
-from .models import GenomicTestNov20, GenomicTestJul21
+
+from .models import (
+    GenomicTestNov20,
+    ClinicalIndicationNov20,
+    GenomicTestJul21,
+    ClinicalIndicationJul21,
+    )
 
 
-class Jul21_Table(tables.Table):
+class Jul21MainTable(tables.Table):
     test_code = tables.LinkColumn(
-        'jul21_detail',
+        'jul21_test_detail',
         kwargs={"test_code": tables.A("test_code")},
         )
 
@@ -25,9 +31,43 @@ class Jul21_Table(tables.Table):
             ]
 
 
-class Nov20_Table(tables.Table):
+class Jul21CITable(tables.Table):
+    ci_code = tables.LinkColumn(
+        'jul21_ci_detail',
+        kwargs={"ci_code": tables.A("ci_code")},
+        )
+
+    class Meta:
+        model = ClinicalIndicationJul21
+        fields = [
+            'cancer_id',
+            'ci_code',
+            'ci_name',
+            ]
+
+
+class Jul21CIDetailTable(tables.Table):
     test_code = tables.LinkColumn(
-        'nov20_detail',
+        'jul21_test_detail',
+        kwargs={"test_code": tables.A("test_code")},
+        )
+
+    class Meta:
+        model = GenomicTestJul21
+        fields = [
+            'test_code',
+            'test_name',
+            'cc_id__commissioning',
+            'eligibility',
+            'targets_essential',
+            'targets_desirable',
+            ]
+
+
+
+class Nov20MainTable(tables.Table):
+    test_code = tables.LinkColumn(
+        'nov20_test_detail',
         kwargs={"test_code": tables.A("test_code")},
         )
 
@@ -43,4 +83,35 @@ class Nov20_Table(tables.Table):
             'tech_id__technology',
             'inhouse_id__inhouse',
             'provided_id__provided',
+            ]
+
+
+class Nov20CITable(tables.Table):
+    ci_code = tables.LinkColumn(
+        'nov20_ci_detail',
+        kwargs={"ci_code": tables.A("ci_code")},
+        )
+
+    class Meta:
+        model = ClinicalIndicationNov20
+        fields = [
+            'cancer_id',
+            'ci_code',
+            'ci_name',
+            ]
+
+
+class Nov20CIDetailTable(tables.Table):
+    test_code = tables.LinkColumn(
+        'nov20_test_detail',
+        kwargs={"test_code": tables.A("test_code")},
+        )
+
+    class Meta:
+        model = GenomicTestNov20
+        fields = [
+            'test_code',
+            'test_name',
+            'eligibility',
+            'targets_essential',
             ]

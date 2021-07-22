@@ -1,0 +1,35 @@
+{% extends 'ngtdc_db/base.html' %}
+{% block body_block %}
+{% load render_table from django_tables2 %}
+
+<div style="width:90%; margin:0 auto; padding-top: 50px; padding-bottom: 50px;">
+
+    <div>
+        <h1>National Genomic Test Directory for Cancer</h1>
+        <p>
+            <strong>Version currently displayed: </strong>July 2021 (most recent)
+            <br><a href='/Jul21_CI_List/'>Back to table view</a>
+        </p>
+        <br>
+
+        <h2>Clinical Indication Details:</h2>
+        <br>
+
+        <p style='text-align:center; font-size:24px'>
+            <strong>{{ ci_record.ci_code }} {{ ci_record.ci_name }}</strong>
+        </p>
+
+        <p>
+            <strong>Cancer type: </strong>
+            {{ ci_record.cancer_id }}
+        </p>
+        <hr>
+    </div>
+
+    <div>
+        {% render_table tests_table %}
+    </div>
+
+</div>
+
+{% endblock %}
