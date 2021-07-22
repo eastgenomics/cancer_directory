@@ -13,6 +13,11 @@ class Jul21MainTable(tables.Table):
         'jul21_test_detail',
         kwargs={"test_code": tables.A("test_code")},
         )
+    
+    ci_code = tables.LinkColumn(
+        'jul21_ci_detail',
+        kwargs={"ci_code": tables.A("ci_code__ci_code")},
+        )
 
     class Meta:
         model = GenomicTestJul21
@@ -69,6 +74,11 @@ class Nov20MainTable(tables.Table):
     test_code = tables.LinkColumn(
         'nov20_test_detail',
         kwargs={"test_code": tables.A("test_code")},
+        )
+
+    ci_code = tables.LinkColumn(
+        'nov20_ci_detail',
+        kwargs={"ci_code": tables.A("ci_code__ci_code")},
         )
 
     class Meta:
