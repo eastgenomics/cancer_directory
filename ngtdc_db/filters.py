@@ -18,6 +18,7 @@ class Jul21MainFilter(django_filters.FilterSet):
         label='CI Code',
         help_text = '(Clinical indication code e.g. M1)',
         lookup_expr='icontains',
+        widget=forms.TextInput(attrs={'style': 'max-width: 10vw; margin: 0 auto',})
         )
 
     ci_name = django_filters.CharFilter(
@@ -25,6 +26,7 @@ class Jul21MainFilter(django_filters.FilterSet):
         label='CI Name',
         help_text = '(Clinical indication name e.g. Colorectal carcinoma)',
         lookup_expr='icontains',
+        widget=forms.TextInput(attrs={'style': 'max-width: 10vw;',})
         )
 
     test_code = django_filters.CharFilter(
@@ -32,6 +34,7 @@ class Jul21MainFilter(django_filters.FilterSet):
         label='Test Code',
         help_text = '(Test code e.g. M1.2)',
         lookup_expr='icontains',
+        widget=forms.TextInput(attrs={'style': 'max-width: 10vw;',})
         )
 
     test_name = django_filters.CharFilter(
@@ -39,6 +42,7 @@ class Jul21MainFilter(django_filters.FilterSet):
         label='Test Name',
         help_text = '(Test name e.g. KRAS hotspot)',
         lookup_expr='icontains',
+        widget=forms.TextInput(attrs={'style': 'max-width: 10vw;',})
         )
 
     targets_essential = django_filters.CharFilter(
@@ -47,6 +51,7 @@ class Jul21MainFilter(django_filters.FilterSet):
         help_text = '(Test targets e.g. KRAS)',
         lookup_expr='icontains',
         distinct = True,
+        widget=forms.TextInput(attrs={'style': 'max-width: 10vw;',})
         )
 
     targets_desirable = django_filters.CharFilter(
@@ -55,12 +60,14 @@ class Jul21MainFilter(django_filters.FilterSet):
         help_text = '(Test targets e.g. KRAS)',
         lookup_expr='icontains',
         distinct = True,
+        widget=forms.TextInput(attrs={'style': 'max-width: 10vw;',})
         )
 
     tt_code = django_filters.CharFilter(
         field_name='tt_id__tt_code',
         label='TT Code',
         lookup_expr='icontains',
+        widget=forms.TextInput(attrs={'style': 'max-width: 10vw;',})
         )
 
     class Meta:

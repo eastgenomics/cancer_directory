@@ -23,6 +23,15 @@ Returns:
 """
 
 import pandas as pd
+import httplib2 as http
+import json
+
+try:
+    from urlparse import urlparse
+
+except ImportError:
+    from urllib.parse import urlparse
+
 
 class Data:
     def __init__(self, filepath):
@@ -229,7 +238,8 @@ class Data:
         """
 
         # convert every cell value to a string, and strip whitespace
-        single_df = single_df.applymap(lambda x: str(x).strip())
+        single_df = single_df.applymap(str)
+        single_df = single_df.applymap(lambda x: x.strip())
 
         return single_df
 
@@ -355,6 +365,66 @@ class Data:
             # Replace cell's old string value with new_cell_contents list
             single_df.iloc[i].loc['targets_essential'] = new_cell_contents
                 
+            i += 1
+
+        return single_df
+
+
+    def get_hgncs(self, single_df):
+        """Get associated target IDs (where they exist) for each target in each
+        cell of the 'targets_essential' column.
+
+        Args:
+            single_df [pandas df]: contains NGTDC data
+
+        Returns:
+            single_df [pandas df]: new field with HGNC IDs
+        """
+
+        targets_column = single_df['targets_essential']
+
+        # Create new column to hold HGNC IDs in a list
+        single_df['hgnc_field'] = single_df.apply(lambda x: [], axis=1)
+
+        # Iterate over all targets for each row
+        i = 0
+        for cell in targets_column:
+            for gene_symbol in cell:
+
+                # Construct request to HGNC website REST using target symbol
+                headers = {'Accept': 'application/json'}
+                uri = 'http://rest.genenames.org'
+                path = '/search/symbol/' + str(gene_symbol)
+
+                target = urlparse(uri+path)
+                method = 'GET'
+                body = ''
+                h = http.Http()
+
+                # Make request to REST
+                response, content = h.request(
+                    target.geturl(),
+                    method,
+                    body,
+                    headers
+                    )
+
+                if response['status'] == '200':
+                    # parse reply with json module 
+                    data = json.loads(content)
+
+                    single_df.iloc[i].loc['hgnc_field'].append(data['hgnc_id'])
+
+                else:
+                    print(
+                        'Query error for {a}:'.format(a=gene_symbol),
+                        response['status']
+                        )
+
+                    data.iloc[i].loc['hgnc_id'].append(
+                        'Not applicable'
+                        )
+
             i += 1
 
         return single_df
@@ -520,7 +590,7 @@ class Data:
                     )
 
         # get the numbers of distinct values in each field
-        exclude_fields = ['targets_essential']
+        exclude_fields = ['targets_essential', 'hgnc_id']
 
         for field in single_df.columns:
             if field not in exclude_fields:
@@ -531,18 +601,19 @@ class Data:
                     '\n{a} has {b} unique values'.format(a = field, b = count)
                     )
                 print(unique[:20])
-            
+
             else:
                 unique = []
                 for cell in single_df[field]:
                     for element in cell:
                         if (element != '') and (element not in unique):
                             unique.append(element)
-                
+
                 count = len(unique)
                 print(
                     '\n{a} has {b} unique values'.format(a = field, b = count)
                     )
-                
+                print(unique[:20])
+
                 # for element in unique:
                 #     print(element)

@@ -271,7 +271,8 @@ class Data:
         """
 
         # convert every cell value to a string, and strip whitespace
-        single_df = single_df.applymap(lambda x: str(x).strip())
+        single_df = single_df.applymap(str)
+        single_df = single_df.applymap(lambda x: x.strip())
 
         return single_df
 

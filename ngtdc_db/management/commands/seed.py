@@ -49,23 +49,26 @@ class Command(BaseCommand):
             raise ValueError('Specified directory version must be 1 or 2.')
 
         # Functions which apply to a dictionary of pandas dataframes
-        df_dict = data.get_xl_data(xl_file)
-        data.remove_blank_rows(df_dict)
-        data.rename_columns(df_dict)
-        data.replace_merged_cells(df_dict)
-        data.default_blank_values(df_dict)
-        data.add_new_fields(df_dict)
+        df_dict_1 = data.get_xl_data(xl_file)
+        df_dict_2 = data.remove_blank_rows(df_dict_1)
+        df_dict_3 = data.rename_columns(df_dict_2)
+        df_dict_4 = data.replace_merged_cells(df_dict_3)
+        df_dict_5 = data.default_blank_values(df_dict_4)
+        df_dict_6 = data.add_new_fields(df_dict_5)
 
         if file_version == '2':
-            data.TEMPORARY_FIX_BLANK_TCS(df_dict)
+            df_dict_7 = data.TEMPORARY_FIX_BLANK_TCS(df_dict_6)
+        
+        elif file_version == '1':
+            df_dict_7 = df_dict_6
 
         # Functions which apply to a single consolidated dataframe
-        single_df = data.combine_dataframes(df_dict)
-        data.all_cells_to_strings(single_df)
-        data.targets_to_lists(single_df)
+        single_df_1 = data.combine_dataframes(df_dict_7)
+        single_df_2 = data.all_cells_to_strings(single_df_1)
+        single_df_3 = data.targets_to_lists(single_df_2)
 
-        return single_df, file_version
-    
+        return single_df_3, file_version
+
 
     def handle(self, *args, **kwargs):
         """Gets data from .xlsx file and inserts into Django database."""
