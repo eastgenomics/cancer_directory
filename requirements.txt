@@ -3,3 +3,4 @@ django-filter==2.4.0
 django-tables2==2.4.0
 httplib2
 pandas
+ratelimit

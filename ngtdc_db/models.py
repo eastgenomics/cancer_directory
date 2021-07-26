@@ -210,6 +210,11 @@ class TargetJul21(models.Model):
         verbose_name='Target',
         max_length=100,
         )
+    
+    hgnc_id = models.CharField(
+        verbose_name='HGNC ID',
+        max_length=50,
+    )
 
     def __str__(self):
         return self.target
@@ -478,6 +483,11 @@ class TargetNov20(models.Model):
         verbose_name='Target',
         max_length=100,
         )
+
+    hgnc_id = models.CharField(
+        verbose_name='HGNC ID',
+        max_length=50,
+    )
 
     def __str__(self):
         return self.target

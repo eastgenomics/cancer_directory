@@ -23,14 +23,6 @@ Returns:
 """
 
 import pandas as pd
-import httplib2 as http
-import json
-
-try:
-    from urlparse import urlparse
-
-except ImportError:
-    from urllib.parse import urlparse
 
 
 class Data:
@@ -372,65 +364,6 @@ class Data:
         return single_df
 
 
-    def get_hgncs(self, single_df):
-        """Get associated target IDs (where they exist) for each target in each
-        cell of the 'targets_essential' column.
-
-        Args:
-            single_df [pandas df]: contains NGTDC data
-
-        Returns:
-            single_df [pandas df]: new field with HGNC IDs
-        """
-
-        targets_column = single_df['targets_essential']
-
-        # Create new column to hold HGNC IDs in a list
-        single_df['hgnc_field'] = single_df.apply(lambda x: [], axis=1)
-
-        # Iterate over all targets in each row
-        i = 0
-        for cell in targets_column:
-            for gene_symbol in cell:
-
-                # Construct request to HGNC website REST using target symbol
-                headers = {'Accept': 'application/json'}
-                uri = 'http://rest.genenames.org'
-                path = '/search/symbol/' + str(gene_symbol)
-
-                target = urlparse(uri+path)
-                method = 'GET'
-                body = ''
-                h = http.Http()
-
-                # Make request to REST
-                response, content = h.request(
-                    target.geturl(),
-                    method,
-                    body,
-                    headers
-                    )
-
-                if response['status'] == '200':
-                    # Parse reply with json module 
-                    data = json.loads(content)
-
-                    # Add identified HGNC IDs to new field
-                    single_df.iloc[i].loc['hgnc_field'].append(
-                        (gene_symbol, data['hgnc_id'])
-                        )
-
-                else:
-                    print(
-                        'Query error for {a}:'.format(a=gene_symbol),
-                        response['status']
-                        )
-
-            i += 1
-
-        return single_df
-
-
     def scopes_to_lists(self, single_df):
         """NOT CURRENTLY IN USE
         
@@ -591,7 +524,7 @@ class Data:
                     )
 
         # get the numbers of distinct values in each field
-        exclude_fields = ['targets_essential', 'hgnc_field']
+        exclude_fields = ['targets_essential']
 
         for field in single_df.columns:
             if field not in exclude_fields:
@@ -614,7 +547,7 @@ class Data:
                 print(
                     '\n{a} has {b} unique values'.format(a = field, b = count)
                     )
-                print(unique[:20])
+                # print(unique[:20])
 
-                # for element in unique:
-                #     print(element)
+                for element in unique[:5]:
+                    print(element)

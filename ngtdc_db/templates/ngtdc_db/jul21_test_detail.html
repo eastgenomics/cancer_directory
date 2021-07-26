@@ -58,18 +58,20 @@
 
         <p>
             <strong>Essential Targets ({{ essential_links.count }})</strong>
+            <br>HGNC ID in brackets if available
             <ul>
                 {% for record in essential_links %}
-                <li>{{ record.target_id }}</li>
+                <li>{{ record.target_id }} ({{ record.target_id.hgnc_id }})</li>
                 {% endfor %}
             </ul>
         </p>
 
         <p>
             <strong>Desirable Targets ({{ desirable_links.count }})</strong>
+            <br>HGNC ID in brackets if available
             <ul>
                 {% for record in desirable_links %}
-                <li>{{ record.target_id }}</li>
+                <li>{{ record.target_id }} ({{ record.target_id.hgnc_id }})</li>
                 {% endfor %}
             </ul>
         </p>

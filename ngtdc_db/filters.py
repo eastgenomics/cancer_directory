@@ -16,7 +16,7 @@ from .models import (
     CurrentlyProvidedJul21,
     InHouseTestJul21,
     GenomicTestJul21,
-)
+    )
 
 
 class Jul21MainFilter(django_filters.FilterSet):

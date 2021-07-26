@@ -29,6 +29,16 @@ from ngtdc_db.models import (
 	EssentialTargetLinksNov20,
 	)
 
+import httplib2 as http
+import json
+from ratelimit import limits
+
+try:
+    from urlparse import urlparse
+
+except ImportError:
+    from urllib.parse import urlparse
+
 
 def insert_data(cleaned_data, directory_version):
 	"""Insert data into the database"""
@@ -81,9 +91,13 @@ def insert_data(cleaned_data, directory_version):
 				)
 
 			# Populate target and essential/desirable target link tables
-			for element in row['targets_essential']:
+			for single_target in row['targets_essential']:
+				
+				hgnc = get_hgnc(single_target)
+
 				target, created = TargetNov20.objects.get_or_create(
-					target = element,
+					target = single_target,
+					hgnc_id = hgnc
 					)
 
 				link, created = EssentialTargetLinksNov20.objects.get_or_create(
@@ -171,9 +185,13 @@ def insert_data(cleaned_data, directory_version):
 			target_fields = ['targets_essential', 'targets_desirable']
 
 			for field in target_fields:
-				for element in row[field]:
+				for single_target in row[field]:
+
+					hgnc = get_hgnc(single_target)
+
 					target, created = TargetJul21.objects.get_or_create(
-						target = element,
+						target = single_target,
+						hgnc_id = hgnc
 						)
 
 					if field == 'targets_essential':
@@ -187,3 +205,59 @@ def insert_data(cleaned_data, directory_version):
 							test_code = genomic_test,
 							target_id = target,
 							)
+
+
+@limits(calls=10, period=1)
+def get_hgnc(single_target):
+	"""Get associated HGNC ID (where it exists) for each genomic test target.
+
+	Args:
+		target [string]: single target of a genomic test
+
+	Returns:
+		hgnc_id [string]: HGNC ID of target (if such exists)
+	"""
+
+	# Construct request to HGNC website REST using target symbol
+	headers = {'Accept': 'application/json'}
+	method = 'GET'
+	body = ''
+	h = http.Http()
+
+	uri = 'http://rest.genenames.org'
+
+	# Define a URL to search for the target in current gene symbols
+	current_path = '/search/symbol/' + str(single_target)
+	current_target = urlparse(uri + current_path)
+
+	# Define a URL to search for the target in previous gene symbols
+	previous_path = '/search/prev_symbol/' + str(single_target)
+	previous_target = urlparse(uri + previous_path)
+
+	# Make request to API with these URLs, look in current symbols first
+	for target_url in [current_target, previous_target]:
+		response, content = h.request(
+			target_url.geturl(),
+			method,
+			body,
+			headers
+			)
+
+		# If the request is successful, load json content
+		if response['status'] == '200':
+			data = json.loads(content)
+
+			# If there is an HGNC ID value, the function returns this
+			try:
+				hgnc_id = str(data['response']['docs'][0]['hgnc_id'])
+				return hgnc_id
+			
+			except IndexError:
+				if target_url == current_target:
+					continue
+
+				else:
+					return 'None'
+
+		else:
+			return 'None'
