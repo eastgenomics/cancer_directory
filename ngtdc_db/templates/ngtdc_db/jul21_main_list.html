@@ -19,15 +19,16 @@
     </div>
 
     <div>
-        <h2>Search/filter by genomic test details</h2>
+        <h2>Search/filter all genomic tests</h2>
         <p>
             Alternatively, 
-            <a href='/Jul21_CI_List/'>search/filter by clinical indications</a>
+            <a href='/Jul21_CI_List/'>search/filter by clinical indication groups</a>
         </p>
         <br>
 
         <form method='GET'>
-            <strong>{{ filter.form.as_ul }}</strong>
+            {{ filter.form.as_ul }}
+            <br>
             <input type='submit' value='Filter' />
     
             <br><br>

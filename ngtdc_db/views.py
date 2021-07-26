@@ -11,6 +11,7 @@ from .models import (
     EssentialTargetLinksJul21,
     DesirableTargetLinksJul21,
     )
+
 from .tables import (
     Nov20MainTable,
     Nov20CITable,
@@ -19,6 +20,7 @@ from .tables import (
     Jul21CITable,
     Jul21CIDetailTable,
     )
+    
 from .filters import (
     Nov20MainFilter,
     Nov20CIFilter,

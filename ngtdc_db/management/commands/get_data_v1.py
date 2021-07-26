@@ -167,8 +167,10 @@ class Data:
             # Define the default value for blank cells
             blank_value = 'Not specified'
 
-            # Set all empty cells (or just whitespace) to default
+            # Set all empty cells to the default value
             df_dict[df].fillna(blank_value, inplace=True)
+
+            # Set cells which strip to a blank string to the default value
             df_dict[df] = df_dict[df].applymap(
                 lambda x: 'Not specified' if str(x).strip() == '' else x
                 )
@@ -386,7 +388,7 @@ class Data:
         # Create new column to hold HGNC IDs in a list
         single_df['hgnc_field'] = single_df.apply(lambda x: [], axis=1)
 
-        # Iterate over all targets for each row
+        # Iterate over all targets in each row
         i = 0
         for cell in targets_column:
             for gene_symbol in cell:
@@ -410,19 +412,18 @@ class Data:
                     )
 
                 if response['status'] == '200':
-                    # parse reply with json module 
+                    # Parse reply with json module 
                     data = json.loads(content)
 
-                    single_df.iloc[i].loc['hgnc_field'].append(data['hgnc_id'])
+                    # Add identified HGNC IDs to new field
+                    single_df.iloc[i].loc['hgnc_field'].append(
+                        (gene_symbol, data['hgnc_id'])
+                        )
 
                 else:
                     print(
                         'Query error for {a}:'.format(a=gene_symbol),
                         response['status']
-                        )
-
-                    data.iloc[i].loc['hgnc_id'].append(
-                        'Not applicable'
                         )
 
             i += 1
@@ -590,7 +591,7 @@ class Data:
                     )
 
         # get the numbers of distinct values in each field
-        exclude_fields = ['targets_essential', 'hgnc_id']
+        exclude_fields = ['targets_essential', 'hgnc_field']
 
         for field in single_df.columns:
             if field not in exclude_fields:

@@ -16,7 +16,7 @@ class CancerTypeJul21(models.Model):
 
     cancer_type = models.CharField(
         verbose_name='Cancer Type',
-        max_length=25, 
+        max_length=25,
         )
 
     def __str__(self):

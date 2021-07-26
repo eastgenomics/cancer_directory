@@ -30,8 +30,8 @@ class Jul21MainTable(tables.Table):
             'targets_desirable',
             'scope_id__test_scope',
             'tech_id__technology',
-            'inhouse_id__inhouse',
             'provided_id__provided',
+            'inhouse_id__inhouse',
             'tt_id__tt_code',
             ]
 
