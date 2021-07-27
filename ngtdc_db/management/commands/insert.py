@@ -1,4 +1,4 @@
-import pandas
+import pandas as pd
 from django.contrib.auth.models import User
 
 from ngtdc_db.models import (
@@ -29,18 +29,13 @@ from ngtdc_db.models import (
 	EssentialTargetLinksNov20,
 	)
 
-import httplib2 as http
-import json
-from ratelimit import limits
-
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
-
 
 def insert_data(cleaned_data, directory_version):
 	"""Insert data into the database"""
+	
+	# File containing data from HGNC website
+	hgnc_file = 'hgnc_dump_210727.txt'
+	df = pd.read_csv(hgnc_file, sep='\t')
 
 	for index, row in cleaned_data.iterrows():
 
@@ -92,7 +87,7 @@ def insert_data(cleaned_data, directory_version):
 			# Populate target and essential/desirable target link tables
 			for single_target in row['targets_essential']:
 				
-				hgnc = get_hgnc(single_target)
+				hgnc = get_hgnc(df, single_target)
 
 				target, created = TargetNov20.objects.get_or_create(
 					target = single_target,
@@ -186,7 +181,7 @@ def insert_data(cleaned_data, directory_version):
 			for field in target_fields:
 				for single_target in row[field]:
 
-					hgnc = get_hgnc(single_target)
+					hgnc = get_hgnc(df, single_target)
 
 					target, created = TargetJul21.objects.get_or_create(
 						target = single_target,
@@ -206,81 +201,45 @@ def insert_data(cleaned_data, directory_version):
 							)
 
 
-# Limit API calls by this function to 10 per second
-@limits(calls=10, period=1)
-def get_hgnc(single_target):
-	"""Get associated HGNC ID (where it exists) for each genomic test target.
+def get_hgnc(df, single_target):
+    """Get associated HGNC ID (where it exists) for each genomic test target.
+    Gets HGNC IDs from tab-delimited .txt file sourced from HGNC website.
 
 	Args:
+		df [dataframe]: pandas dataframe of HGNC website data 
 		single_target [string]: single target of a genomic test
 
 	Returns:
 		hgnc_id [string]: target's HGNC ID if it exists, 'None' otherwise
 	"""
 
-	# Exclude targets which the HGNC REST can't evaluate properly
-	if ('&' in single_target) or \
-		('/' in single_target) or \
-		('CHROMOSOME' in single_target) or \
-		('DELETION' in single_target) or \
-		('DEPENDENT' in single_target) or \
-		('HOTSPOT' in single_target) or \
-		('KARYOTYPE' in single_target) or \
-		('MULTIPLE' in single_target) or \
-		('NUMBER' in single_target) or \
-		('OTHER' in single_target) or \
-		('PROMOTER' in single_target) or \
-		('REARRANGEMENT' in single_target) or \
-		('REGION' in single_target) or \
-		('TRISOMY' in single_target) or \
-		('TYPE' in single_target) or \
-		(single_target[:4] == 'DEL(') or \
-		(single_target[:4] == 'INV(') or \
-		(single_target[:2] == 'I(') or \
-		(single_target[:2] == 'T('):
+    try:
+		# Look for the target in the column of official gene symbols
+        target_index = df.index[df['symbol'] == single_target]
 
-		return 'None'
+		# Get the associated HGNC ID
+        hgnc_id = df.loc[target_index[0], 'hgnc_id']
 
-	# Construct request to HGNC website REST using target symbol
-	headers = {'Accept': 'application/json'}
-	method = 'GET'
-	body = ''
-	h = http.Http()
+        return hgnc_id
+    
+    except IndexError:
+        has_id = False
+        i = 0
 
-	uri = 'http://rest.genenames.org'
+		# Look through the column of previous official gene symbols
+        for value in df['prev_symbol']:
 
-	# Define a URL to search for the target in current gene symbols
-	current_path = '/search/symbol/' + str(single_target)
-	current_target = urlparse(uri + current_path)
+			# If the target appears in a value in this column,
+            if single_target in str(value):
+                has_id = True
 
-	# Define a URL to search for the target in previous gene symbols
-	previous_path = '/search/prev_symbol/' + str(single_target)
-	previous_target = urlparse(uri + previous_path)
+				# Get the associated HGNC ID
+                hgnc_id = df.iloc[i].loc['hgnc_id']
 
-	# Make request to API with these URLs, look in current symbols first
-	for target_url in [current_target, previous_target]:
-		response, content = h.request(
-			target_url.geturl(),
-			method,
-			body,
-			headers
-			)
-
-		# If the request is successful, load json content
-		if response['status'] == '200':
-			data = json.loads(content)
-
-			# If there is an HGNC ID value, the function returns this
-			try:
-				hgnc_id = str(data['response']['docs'][0]['hgnc_id'])
-				return hgnc_id
-			
-			except IndexError:
-				if target_url == current_target:
-					continue
-
-				else:
-					return 'None'
-
-		else:
-			return 'None'
+                return hgnc_id
+            
+            i += 1
+        
+		# If the target doesn't appear in the HGNC data its value is 'None'
+        if not has_id:
+            return 'None'
