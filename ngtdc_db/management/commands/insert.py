@@ -35,7 +35,6 @@ from ratelimit import limits
 
 try:
     from urlparse import urlparse
-
 except ImportError:
     from urllib.parse import urlparse
 
@@ -207,16 +206,40 @@ def insert_data(cleaned_data, directory_version):
 							)
 
 
+# Limit API calls by this function to 10 per second
 @limits(calls=10, period=1)
 def get_hgnc(single_target):
 	"""Get associated HGNC ID (where it exists) for each genomic test target.
 
 	Args:
-		target [string]: single target of a genomic test
+		single_target [string]: single target of a genomic test
 
 	Returns:
-		hgnc_id [string]: HGNC ID of target (if such exists)
+		hgnc_id [string]: target's HGNC ID if it exists, 'None' otherwise
 	"""
+
+	# Exclude targets which the HGNC REST can't evaluate properly
+	if ('&' in single_target) or \
+		('/' in single_target) or \
+		('CHROMOSOME' in single_target) or \
+		('DELETION' in single_target) or \
+		('DEPENDENT' in single_target) or \
+		('HOTSPOT' in single_target) or \
+		('KARYOTYPE' in single_target) or \
+		('MULTIPLE' in single_target) or \
+		('NUMBER' in single_target) or \
+		('OTHER' in single_target) or \
+		('PROMOTER' in single_target) or \
+		('REARRANGEMENT' in single_target) or \
+		('REGION' in single_target) or \
+		('TRISOMY' in single_target) or \
+		('TYPE' in single_target) or \
+		(single_target[:4] == 'DEL(') or \
+		(single_target[:4] == 'INV(') or \
+		(single_target[:2] == 'I(') or \
+		(single_target[:2] == 'T('):
+
+		return 'None'
 
 	# Construct request to HGNC website REST using target symbol
 	headers = {'Accept': 'application/json'}
