@@ -33,15 +33,17 @@ class Command(BaseCommand):
         xl_file = ''
         data = ''
 
+        # Specify the file and script to use for seeding with version 1 data
         if file_version == '1':
-            xl_file = """National-Genomic-Test-Directory-Cancer-November-2020-21.xlsx"""
 
+            xl_file = """National-Genomic-Test-Directory-Cancer-November-2020-21.xlsx"""
             data = get_data_v1.Data(xl_file)
             print('Seeding with version 1 file:', xl_file)
-        
-        elif file_version == '2':
-            xl_file = """CONFIDENTIAL-Final-National-Genomic-Test-Directory-Cancer-20-21-v2_pstb.xlsx"""
 
+        # Specify the file and script to use for seeding with version 2 data
+        elif file_version == '2':
+
+            xl_file = """CONFIDENTIAL-Final-National-Genomic-Test-Directory-Cancer-20-21-v2_pstb.xlsx"""
             data = get_data_v2.Data(xl_file)
             print('Seeding with version 2 file:', xl_file)
         
@@ -57,7 +59,7 @@ class Command(BaseCommand):
         df_dict_6 = data.add_new_fields(df_dict_5)
 
         if file_version == '2':
-            df_dict_7 = data.TEMPORARY_FIX_BLANK_TCS(df_dict_6)
+            df_dict_7 = data.TEMPORARY_FIX_REPLACE_BLANK_TC(df_dict_6)
         
         elif file_version == '1':
             df_dict_7 = df_dict_6

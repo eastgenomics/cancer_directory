@@ -132,13 +132,12 @@ class Data:
 
         for df in df_dict:
             data = df_dict[df]
-            ci_codes_column = data.loc[:, 'ci_code']
 
             i = 0
-            for cell in ci_codes_column:
+            for row in data.iterrows():
 
                 # if cell was merged in the xls worksheet,
-                if pd.isna(cell):
+                if pd.isna(row[1]['ci_code']):
 
                     # update cell value to that of the cell above it
                     data.loc[i, 'ci_code'] = data.loc[i-1, 'ci_code']
@@ -168,11 +167,10 @@ class Data:
 
         for df in df_dict:
 
-            # Define the default value for blank cells
-            blank_value = 'Not specified'
+            # Set all empty cells to default value
+            df_dict[df].fillna('Not specified', inplace=True)
 
-            # Set all empty cells (or just whitespace) to default
-            df_dict[df].fillna(blank_value, inplace=True)
+            # Set cells containing only whitespace to default value
             df_dict[df] = df_dict[df].applymap(
                 lambda x: 'Not specified' if str(x).strip() == '' else x
                 )
@@ -180,15 +178,16 @@ class Data:
         return df_dict
 
 
-    def TEMPORARY_FIX_BLANK_TCS(self, df_dict):
+    def TEMPORARY_FIX_REMOVE_BLANK_TC(self, df_dict):
         """Because test_code is the primary key for the GenomicTest model, all
         records must have a unique value for this field. Version 2 of the test
         directory is problematic because many records have a blank test code
         value, meaning they all get assigned a non-unique value of 'Not
         specified' (thanks version 2). There is also an issue where two
-        different tests have been assigned the test code 'M150.6'. This
-        function removes any records where the test code is blank, and the two
-        tests with the same test code.
+        different tests have been assigned the test code 'M150.6'. 
+        
+        This function removes any records where the test code is blank, as well
+        as the two tests with the same test code.
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
@@ -209,6 +208,71 @@ class Data:
                 inplace=True)
 
             # Reset row index to be a consistent series
+            data = data.reset_index
+
+        return df_dict
+
+
+    def TEMPORARY_FIX_REPLACE_BLANK_TC(self, df_dict):
+        """Because test_code is the primary key for the GenomicTest model, all
+        records must have a unique value for this field. Version 2 of the test
+        directory is problematic because many records have a blank test code
+        value, meaning they all get assigned a non-unique value of 'Not
+        specified' (thanks version 2). There is also an issue where two
+        different tests have been assigned the test code 'M150.6'. 
+        
+        This function replaces any blank test code values with a temporary
+        identifier. The two tests with the same test code of M150.6 are removed
+        to avoid confusion.
+
+        Args:
+            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+
+        Returns:
+            df_dict [dict]: rows with test code = 'Not specified' removed
+        """
+
+        for df in df_dict:
+            data = df_dict[df]
+
+            i = 0
+            for row in data.iterrows():
+                # If a test code would be blank:
+                if row[1]['test_code'] == 'Not specified':
+
+                    # If the one above it doesn't have a temporary identifier,
+                    # this is the first temporary test code for that CI
+
+                    if 'temp' not in data.iloc[i-1].loc['test_code']:
+                        x = 1
+
+                    # If the one above it DOES have a temporary identifer,
+                    # increment the temporary identifier number
+
+                    elif 'temp' in data.iloc[i-1].loc['test_code']:
+                        x += 1
+
+                    # Define a temporary identifier based on the CI and the
+                    # incrementing identifier number
+
+                    temp_tc = '{ci}.temp_{x}'.format(
+                        ci = row[1]['ci_code'],
+                        x = x
+                        )
+
+                    # Replace the empty test_code field with this value
+                    data.iloc[i].loc['test_code'] = temp_tc
+                    data.iloc[i].loc['test_name'] = 'No test code/name assigned'
+
+                i += 1
+
+            # If a row has a test code value of 'M150.6', drop the row
+            data.drop(
+                data.loc[data['test_code']=='M150.6'].index,
+                inplace=True,
+                )
+
+            # Reset the row index to be a consistent series
             data = data.reset_index
 
         return df_dict
@@ -410,10 +474,8 @@ class Data:
         return single_df
 
 
-    def scopes_to_lists(self, single_df):
-        """NOT CURRENTLY IN USE
-        
-        Iterates over column 5 (test_scope) and changes each cell to a list,
+    def UNUSED_scopes_to_lists(self, single_df):
+        """Iterates over column 5 (test_scope) and changes each cell to a list,
         each element of which is a string representing a single scope of the
         test. If a cell is empty, it is changed to a single-element list. 
 
@@ -427,25 +489,27 @@ class Data:
         scopes_column = single_df.loc[:, 'test_scope']
 
         i = 0
-        for cell in scopes_column:
+        for row in single_df.iterrows():
+            scope = row[1]['test_scope']
             new_cell = []
-            if pd.isna(cell):
-                new_cell.append('Not applicable')
+
+            if pd.isna(scope):
+                new_cell.append('Not specified')
             
-            elif '/' in cell:
-                scope_list = cell.split('/')
+            elif '/' in scope:
+                scope_list = scope.split('/')
                 stripped = [element.strip() for element in scope_list]
-                for scope in stripped:
-                    new_cell.append(scope)
+                for single_scope in stripped:
+                    new_cell.append(single_scope)
             
-            elif ';' in cell:
-                scope_list = cell.split(';')
+            elif ';' in scope:
+                scope_list = scope.split(';')
                 stripped = [element.strip() for element in scope_list]
-                for scope in stripped:
-                    new_cell.append(scope)
+                for single_scope in stripped:
+                    new_cell.append(single_scope)
             
             else:
-                stripped = cell.strip()
+                stripped = scope.strip()
                 new_cell.append(stripped)
             
             single_df.loc[i, 'test_scope'] = new_cell
@@ -454,10 +518,8 @@ class Data:
         return single_df
 
 
-    def tech_to_lists(self, single_df):
-        """NOT CURRENTLY IN USE
-        
-        Iterates over column 6 (technology) and changes each cell to a list,
+    def UNUSED_tech_to_lists(self, single_df):
+        """Iterates over column 6 (technology) and changes each cell to a list,
         each element of which is a string representing a single technology. If
         a cell is empty, it is changed to a single-element list. 
 
@@ -468,131 +530,31 @@ class Data:
             single_df [pandas df]: cells in column 6 are now lists
         """
 
-        tech_column = single_df.loc[:, 'technology']
-
         i = 0
-        for cell in tech_column:
+        for row in single_df.iterrows():
+            technology = row[1]['technology']
             new_cell = []
-            if pd.isna(cell):
-                new_cell.append('Not applicable')
+
+            if pd.isna(technology):
+                new_cell.append('Not specified')
             
-            elif '/' in cell:
-                tech_list = cell.split('/')
+            elif '/' in technology:
+                tech_list = technology.split('/')
                 stripped = [element.strip() for element in tech_list]
                 for tech in stripped:
                     new_cell.append(tech)
             
-            elif ';' in cell:
-                tech_list = cell.split(';')
+            elif ';' in technology:
+                tech_list = technology.split(';')
                 stripped = [element.strip() for element in tech_list]
                 for tech in stripped:
                     new_cell.append(tech)
             
             else:
-                stripped = cell.strip()
+                stripped = technology.strip()
                 new_cell.append(stripped)
             
             single_df.loc[i, 'technology'] = new_cell
             i += 1
 
         return single_df
-
-
-    def check_df_dict(self, df_dict):
-        """Optional check on each field of each dataframe:
-        (a) total number of cells in field
-        (b) number of unique cells in field
-        (c) number of empty cells in field
-
-        Within a cancer type:
-        -all fields should have the same (a)
-        -test_code should have (a)=(b), since it's unique for every row
-        -ci_code and ci_name should have the same (b)
-        -cancer_type should have (b)=1
-
-        Args:
-            df_dict: dictionary of pandas dfs containing NGTDC data
-        """
-
-        for df in df_dict:
-            data = df_dict[df]
-            print('\n{df}\n--------------------------'.format(df=df))
-
-            exclude_fields = [
-                'targets_essential',
-                'targets_desirable',
-                ]
-
-            # print total, empty and unique cells
-            for field in data.columns:
-                if field not in exclude_fields:
-                    column = data[field]
-                    elements = str(len(column))
-                    unique = str(len(column.unique()))
-                    empty = str(column.isnull().sum())
-
-                    print('{a} has length {b}, {c} are unique, {d} are empty'\
-                        .format(a=field, b=elements, c=unique, d=empty))
-
-                # or just print total and empty cells for targets fields
-                else:
-                    column = data[field]
-                    elements = str(len(column))
-                    empty = str(column.isnull().sum())
-
-                    print('{a} has length {b}, {c} are empty'\
-                        .format(a=field, b=elements, c=empty))
-
-
-    def check_single_df(self, single_df):
-        """Optional check on final dataframe contents
-
-        Args:
-            single_df [pandas df]: contains NGTDC data
-        """
-
-        print('\n')
-        print(single_df.head(n=5))
-        print('\n')
-        print(single_df.tail(n=5))
-
-        # check that in each row, ci_code and test_code have the same number
-        for i in range(len(single_df['test_code'])):
-            cc_no_m = str(single_df.iloc[i].loc['ci_code']).replace('M', '')
-            tc_no_m = str(single_df.iloc[i].loc['test_code']).replace('M', '')
-            tc_no_decimal = tc_no_m.split('.')
-
-            if cc_no_m != tc_no_decimal[0]:
-                print(
-                    'ci code/test code problem on line', str(i), ':',
-                    single_df.iloc[i].loc['ci_code'],
-                    single_df.iloc[i].loc['test_code']
-                    )
-
-        # get the numbers of distinct values in each field
-        exclude_fields = ['targets_essential', 'targets_desirable']
-
-        for field in single_df.columns:
-            if field not in exclude_fields:
-                unique = single_df[field].unique()
-                count = len(unique)
-
-                print(
-                    '\n{a} has {b} unique values'.format(a = field, b = count)
-                    )
-                print(unique[:20])
-            
-            else:
-                unique = []
-                for cell in single_df[field]:
-                    for element in cell:
-                        if (element != '') and (element not in unique):
-                            unique.append(element)
-                
-                count = len(unique)
-                print(
-                    '\n{a} has {b} unique values'.format(a = field, b = count)
-                    )
-                
-                # for element in unique:
-                #     print(element)

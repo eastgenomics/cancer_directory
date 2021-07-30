@@ -364,10 +364,8 @@ class Data:
         return single_df
 
 
-    def scopes_to_lists(self, single_df):
-        """NOT CURRENTLY IN USE
-        
-        Iterates over column 5 (test_scope) and changes each cell to a list,
+    def UNUSED_scopes_to_lists(self, single_df):
+        """Iterates over column 5 (test_scope) and changes each cell to a list,
         each element of which is a string representing a single scope of the
         test. If a cell is empty, it is changed to a single-element list. 
 
@@ -408,10 +406,8 @@ class Data:
         return single_df
 
 
-    def tech_to_lists(self, single_df):
-        """NOT CURRENTLY IN USE
-        
-        Iterates over column 6 (technology) and changes each cell to a list,
+    def UNUSED_tech_to_lists(self, single_df):
+        """Iterates over column 6 (technology) and changes each cell to a list,
         each element of which is a string representing a single technology. If
         a cell is empty, it is changed to a single-element list. 
 
@@ -450,104 +446,3 @@ class Data:
             i += 1
 
         return single_df
-
-
-    def check_df_dict(self, df_dict):
-        """Optional check on each field of each dataframe:
-        (a) total number of cells in field
-        (b) number of unique cells in field
-        (c) number of empty cells in field
-
-        Within a cancer type:
-        -all fields should have the same (a)
-        -test_code should have (a)=(b), since it's unique for every row
-        -ci_code and ci_name should have the same (b)
-        -cancer_type should have (b)=1
-
-        Args:
-            df_dict: dictionary of pandas dfs containing NGTDC data
-        """
-
-        for df in df_dict:
-            data = df_dict[df]
-            print('\n{df}\n--------------------------'.format(df=df))
-
-            exclude_fields = [
-                'targets_essential',
-                'targets_desirable',
-                ]
-
-            # print total, empty and unique cells
-            for field in data.columns:
-                if field not in exclude_fields:
-                    column = data[field]
-                    elements = str(len(column))
-                    unique = str(len(column.unique()))
-                    empty = str(column.isnull().sum())
-
-                    print('{a} has length {b}, {c} are unique, {d} are empty'\
-                        .format(a=field, b=elements, c=unique, d=empty))
-
-                # or just print total and empty cells for targets fields
-                else:
-                    column = data[field]
-                    elements = str(len(column))
-                    empty = str(column.isnull().sum())
-
-                    print('{a} has length {b}, {c} are empty'\
-                        .format(a=field, b=elements, c=empty))
-
-
-    def check_single_df(self, single_df):
-        """Optional check on final dataframe contents
-
-        Args:
-            single_df [pandas df]: contains NGTDC data
-        """
-
-        print('\n')
-        print(single_df.head(n=5))
-        print('\n')
-        print(single_df.tail(n=5))
-
-        # check that in each row, ci_code and test_code have the same number
-        for i in range(len(single_df['test_code'])):
-            cc_no_m = str(single_df.iloc[i].loc['ci_code']).replace('M', '')
-            tc_no_m = str(single_df.iloc[i].loc['test_code']).replace('M', '')
-            tc_no_decimal = tc_no_m.split('.')
-
-            if cc_no_m != tc_no_decimal[0]:
-                print(
-                    'ci code/test code problem on line', str(i), ':',
-                    single_df.iloc[i].loc['ci_code'],
-                    single_df.iloc[i].loc['test_code']
-                    )
-
-        # get the numbers of distinct values in each field
-        exclude_fields = ['targets_essential']
-
-        for field in single_df.columns:
-            if field not in exclude_fields:
-                unique = single_df[field].unique()
-                count = len(unique)
-
-                print(
-                    '\n{a} has {b} unique values'.format(a = field, b = count)
-                    )
-                print(unique[:20])
-
-            else:
-                unique = []
-                for cell in single_df[field]:
-                    for element in cell:
-                        if (element != '') and (element not in unique):
-                            unique.append(element)
-
-                count = len(unique)
-                print(
-                    '\n{a} has {b} unique values'.format(a = field, b = count)
-                    )
-                # print(unique[:20])
-
-                for element in unique[:5]:
-                    print(element)
