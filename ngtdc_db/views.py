@@ -108,10 +108,11 @@ def jul21_ci_detail(request, ci_code):
     return render(
         request,
         'ngtdc_db/jul21_ci_detail.html',
-        {'ci_record' : ci_record,
-        'tests_table' : tests_table},
+        {
+            'ci_record' : ci_record,
+            'tests_table' : tests_table
+        },
         )
-
 
 
 class Nov20MainList(ListView):
@@ -183,6 +184,8 @@ def nov20_ci_detail(request, ci_code):
     return render(
         request,
         'ngtdc_db/nov20_ci_detail.html',
-        {'ci_record' : ci_record,
-        'tests_table' : tests_table},
+        {
+            'ci_record' : ci_record,
+            'tests_table' : tests_table
+        },
         )

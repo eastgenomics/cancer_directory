@@ -54,6 +54,7 @@ class GenomicTestAdmin(admin.ModelAdmin):
         'citt_id',
         'tt_id',
         )
+        
     filter_horizontal = ('targets_essential', 'targets_desirable')
 
     list_filter = (

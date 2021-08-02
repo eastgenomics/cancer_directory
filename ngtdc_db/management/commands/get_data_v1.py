@@ -52,7 +52,7 @@ class Data:
             ]
 
         # Create pandas object with dfs as columns A-H of each worksheet
-        df_dict = pd.read_excel(filepath, sheets, usecols = 'A:H')
+        df_dict = pd.read_excel(filepath, sheets, usecols='A:H')
 
         return df_dict
 
@@ -71,7 +71,7 @@ class Data:
             data = df_dict[df]
 
             # Remove rows where all cells are blank
-            data.dropna(axis = 0, how = 'all', inplace = True)
+            data.dropna(axis=0, how='all', inplace=True)
 
             # Reset row index to be a consistent series
             data.index = range(len(data))
@@ -80,8 +80,8 @@ class Data:
 
 
     def rename_columns(self, df_dict):
-        """Renames the columns to make them easier to work with (some original
-        column names contain spaces and parentheses)
+        """Renames the columns to make them easier to work with (some
+        original column names contain spaces and parentheses).
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
@@ -112,15 +112,16 @@ class Data:
 
 
     def replace_merged_cells(self, df_dict):
-        """Columns A and B (clinical indication code and name) contain merged
-        cells, which translate to 'NaN' values in df_dict. This function
-        replaces the NaN values from merged cells with the appropriate value.
+        """Columns A and B (clinical indication code and name) contain
+        merged cells, which translate to 'NaN' values in df_dict. This
+        function replaces the NaN values from merged cells with the
+        appropriate value.
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            df_dict [dict]: empty cells caused by merging given relevant values
+            df_dict [dict]: values assigned to empty cells caused by merging
         """
 
         for df in df_dict:
@@ -228,7 +229,7 @@ class Data:
             single_df [pandas df]: contains NGTDC data
 
         Returns:
-            single_df [pandas df]: updated with all cells as stripped strings
+            single_df [pandas df]: all cells changed to stripped strings
         """
 
         # convert every cell value to a string, and strip whitespace
@@ -239,20 +240,20 @@ class Data:
 
 
     def targets_to_lists(self, single_df):
-        """Each cell in column 4 ('targets') is currently a string, and needs
-        to be converted into a list. Each element of the list should be a
-        string representing a single target from that cell.
+        """Each cell in column 4 ('targets') is currently a string, and
+        needs to be converted into a list. Each element of the list should
+        be a string representing a single target from that cell.
 
         e.g. 'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
 
-        Text is converted to uppercase to avoid duplication issues (e.g. '1q2'
-        vs. '1Q2').
+        Text is converted to uppercase to avoid duplication issues 
+        (e.g. '1q2' vs. '1Q2').
 
         Some cells are awkward and need to be managed separately:
         -Empty cells become ['NOT APPLICABLE']
         -Targets which contain sub-lists have to be kept as a whole string
-        -Paired brackets around a target, or unpaired brackets at a target end,
-        are removed
+        -Paired brackets around a target, or unpaired brackets at a target
+        end, are removed
 
         Args:
             single_df [pandas df]: contains NGTDC data
@@ -271,7 +272,6 @@ class Data:
             if cell == 'Not specified':
                 new_cell_contents = ['Not specified',]
 
-
             # If splitting on ',' is a problem, take the whole cell
             # (Note: must be 'types' rather than 'type' to exclude 'karyotype')
             elif ('TRANSCRIPTS' in uppercase) or \
@@ -280,11 +280,9 @@ class Data:
 
                 new_cell_contents = [uppercase]
 
-
             # For cells which are a 'standard' list of targets:
             else:
                 new_cell_contents = []
-
 
                 # If a cell contains the PAR1 region (awkward due to commas),
                 par1_region = 'PAR1 REGION (CRLF2, CSF2RA, IL3RA)'
@@ -299,7 +297,6 @@ class Data:
 
                 else:
                     cell_contents = uppercase
-
 
                 # If the cell contains unnecessary preamble, remove it
                 if 'TO INCLUDE DETECTION OF' in cell_contents:
@@ -318,7 +315,6 @@ class Data:
                 else:
                     to_split = cell_contents
 
-
                 # Split cell contents into a list on a comma delimiter
                 old_cell_target_list = to_split.split(',')
 
@@ -327,7 +323,6 @@ class Data:
                     stripped = element.strip()
                     if stripped == '':
                         continue
-
 
                     # If an element is contained in  brackets, remove them
                     elif ((stripped[0] == '(') and (stripped[-1] == ')')) or \
@@ -350,7 +345,6 @@ class Data:
                         target = stripped[:-1]
                         new_cell_contents.append(target)
 
-
                     # Otherwise just append to cell's new list
                     else:
                         target = stripped
@@ -365,9 +359,10 @@ class Data:
 
 
     def UNUSED_scopes_to_lists(self, single_df):
-        """Iterates over column 5 (test_scope) and changes each cell to a list,
-        each element of which is a string representing a single scope of the
-        test. If a cell is empty, it is changed to a single-element list. 
+        """Iterates over column 5 (test_scope) and changes each cell to a
+        list, each element of which is a string representing a single scope
+        of the test. If a cell is empty, it is changed to a single-element
+        list. 
 
         Args:
             single_df [pandas df]: contains NGTDC data
@@ -376,28 +371,30 @@ class Data:
             single_df [pandas df]: cells in column 5 are now lists
         """
 
-        scopes_column = single_df.loc[:, 'test_scope']
-
         i = 0
-        for cell in scopes_column:
+        for row in single_df.iterrows():
+            scope = row[1]['test_scope']
             new_cell = []
-            if pd.isna(cell):
+
+            if pd.isna(scope):
                 new_cell.append('Not applicable')
             
-            elif '/' in cell:
-                scope_list = cell.split('/')
+            elif '/' in scope:
+                scope_list = scope.split('/')
                 stripped = [element.strip() for element in scope_list]
-                for scope in stripped:
-                    new_cell.append(scope)
+
+                for single_scope in stripped:
+                    new_cell.append(single_scope)
             
-            elif ';' in cell:
-                scope_list = cell.split(';')
+            elif ';' in scope:
+                scope_list = scope.split(';')
                 stripped = [element.strip() for element in scope_list]
-                for scope in stripped:
-                    new_cell.append(scope)
+
+                for single_scope in stripped:
+                    new_cell.append(single_scope)
             
             else:
-                stripped = cell.strip()
+                stripped = scope.strip()
                 new_cell.append(stripped)
             
             single_df.loc[i, 'test_scope'] = new_cell
@@ -407,9 +404,10 @@ class Data:
 
 
     def UNUSED_tech_to_lists(self, single_df):
-        """Iterates over column 6 (technology) and changes each cell to a list,
-        each element of which is a string representing a single technology. If
-        a cell is empty, it is changed to a single-element list. 
+        """Iterates over column 6 (technology) and changes each cell to a
+        list, each element of which is a string representing a single
+        technology. If a cell is empty, it is changed to a single-element
+        list. 
 
         Args:
             single_df [pandas df]: contains NGTDC data
@@ -418,28 +416,30 @@ class Data:
             single_df [pandas df]: cells in column 6 are now lists
         """
 
-        tech_column = single_df.loc[:, 'technology']
-
         i = 0
-        for cell in tech_column:
+        for row in single_df.iterrows():
+            technology = row[1]['technology']
             new_cell = []
-            if pd.isna(cell):
+
+            if pd.isna(technology):
                 new_cell.append('Not applicable')
             
-            elif '/' in cell:
-                tech_list = cell.split('/')
+            elif '/' in technology:
+                tech_list = technology.split('/')
                 stripped = [element.strip() for element in tech_list]
+
                 for tech in stripped:
                     new_cell.append(tech)
             
-            elif ';' in cell:
-                tech_list = cell.split(';')
+            elif ';' in technology:
+                tech_list = technology.split(';')
                 stripped = [element.strip() for element in tech_list]
+                
                 for tech in stripped:
                     new_cell.append(tech)
             
             else:
-                stripped = cell.strip()
+                stripped = technology.strip()
                 new_cell.append(stripped)
             
             single_df.loc[i, 'technology'] = new_cell

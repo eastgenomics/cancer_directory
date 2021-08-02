@@ -43,34 +43,34 @@ def insert_data(cleaned_data, directory_version):
 			# Populate cancer types table
 			cancer_type, created = CancerTypeNov20.objects.get_or_create(
 				cancer_type = row['cancer_type'],
-			)
+				)
 
 			# Populate test scopes table
 			test_scope, created = ScopeNov20.objects.get_or_create(
 				test_scope = row['test_scope'],
-			)
+				)
 
 			# Populate technologies table
 			technology, created = TechnologyNov20.objects.get_or_create(
 				technology = row['technology'],
-			)
+				)
 
 			# Populate in-house tests table
 			inhouse, created = InHouseTestNov20.objects.get_or_create(
 				inhouse = row['in_house_test'],
-			)
+				)
 
 			# Populate currently provided table
 			provided, created = CurrentlyProvidedNov20.objects.get_or_create(
 				provided = row['currently_provided'],
-			)
+				)
 
 			# Populate clinical indications table
 			ci, created = ClinicalIndicationNov20.objects.get_or_create(
 				cancer_id = cancer_type,
 				ci_code = row['ci_code'],
 				ci_name = row['ci_name'],
-			)
+				)
 
 			# Populate genomic tests table
 			genomic_test, created = GenomicTestNov20.objects.get_or_create(
@@ -94,69 +94,72 @@ def insert_data(cleaned_data, directory_version):
 					hgnc_id = hgnc
 					)
 
-				link, created = EssentialTargetLinksNov20.objects.get_or_create(
-					test_code = genomic_test,
-					target_id = target,
-					)
+				link, created = EssentialTargetLinksNov20.objects.\
+					get_or_create(
+						test_code = genomic_test,
+						target_id = target,
+						)
 
 
 		elif directory_version == '2':
 			# Populate cancer types table
 			cancer_type, created = CancerTypeJul21.objects.get_or_create(
 				cancer_type = row['cancer_type'],
-			)
+				)
 
 			# Populate test scopes table
 			test_scope, created = ScopeJul21.objects.get_or_create(
 				test_scope = row['test_scope'],
-			)
+				)
 
 			# Populate technologies table
 			technology, created = TechnologyJul21.objects.get_or_create(
 				technology = row['technology'],
-			)
+				)
 
 			# Populate in-house tests table
 			inhouse, created = InHouseTestJul21.objects.get_or_create(
 				inhouse = row['in_house_test'],
-			)
+				)
 
 			# Populate currently provided table
 			provided, created = CurrentlyProvidedJul21.objects.get_or_create(
 				provided = row['currently_provided'],
-			)
+				)
 
 			# Populate specialist table
 			specialist_group, created = SpecialistJul21.objects.get_or_create(
 				specialist_group = row['specialist_group'],
-			)
+				)
 
 			# Populate commissioning category table
-			commissioning, created = CommissioningCategoryJul21.objects.get_or_create(
-				commissioning = row['commissioning'],
-			)
+			commissioning, created = CommissioningCategoryJul21.objects.\
+				get_or_create(
+					commissioning = row['commissioning'],
+					)
 
 			# Populate family structure table
-			family_structure, created = FamilyStructureJul21.objects.get_or_create(
-				family_structure = row['family_structure'],
-			)
+			family_structure, created = FamilyStructureJul21.objects.\
+				get_or_create(
+					family_structure = row['family_structure'],
+					)
 
 			# Populate CITT comments table
 			citt_comment, created = CITTJul21.objects.get_or_create(
 				citt_comment = row['citt_comment'],
-			)
+				)
 
 			# Populate TT code table
 			tt_code, created = TTJul21.objects.get_or_create(
 				tt_code = row['tt_code'],
-			)
+				)
 
 			# Populate clinical indications table
 			ci, created = ClinicalIndicationJul21.objects.get_or_create(
 				cancer_id = cancer_type,
 				ci_code = row['ci_code'],
 				ci_name = row['ci_name'],
-			)
+				)
 
 			# Populate genomic tests table
 			genomic_test, created = GenomicTestJul21.objects.get_or_create(
@@ -189,21 +192,24 @@ def insert_data(cleaned_data, directory_version):
 						)
 
 					if field == 'targets_essential':
-						link, created = EssentialTargetLinksJul21.objects.get_or_create(
-							test_code = genomic_test,
-							target_id = target,
-							)
+						link, created = EssentialTargetLinksJul21.objects.\
+							get_or_create(
+								test_code = genomic_test,
+								target_id = target,
+								)
 
 					elif field == 'targets_desirable':
-						link, created = DesirableTargetLinksJul21.objects.get_or_create(
-							test_code = genomic_test,
-							target_id = target,
-							)
+						link, created = DesirableTargetLinksJul21.objects.\
+							get_or_create(
+								test_code = genomic_test,
+								target_id = target,
+								)
 
 
 def get_hgnc(df, single_target):
-    """Get associated HGNC ID (where it exists) for each genomic test target.
-    Gets HGNC IDs from tab-delimited .txt file sourced from HGNC website.
+    """Get associated HGNC ID (where it exists) for each genomic test
+	target. Gets HGNC IDs from tab-delimited .txt file sourced from HGNC
+	website.
 
 	Args:
 		df [dataframe]: pandas dataframe of HGNC website data 

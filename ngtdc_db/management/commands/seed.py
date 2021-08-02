@@ -20,13 +20,14 @@ class Command(BaseCommand):
 
 
     def clean_data(self, file_version):
-        """Call get_data.py functions on the specified test directory version.
+        """Call get_data.py functions on the specified test directory
+        version.
 
         Args:
             version: test directory version (1 or 2)
         
         Returns:
-            single_df [pandas dataframe]: data from test directory .xlsx file
+            single_df [pandas dataframe]: data from test directory file
         
         """
 
@@ -36,14 +37,22 @@ class Command(BaseCommand):
         # Specify the file and script to use for seeding with version 1 data
         if file_version == '1':
 
-            xl_file = """National-Genomic-Test-Directory-Cancer-November-2020-21.xlsx"""
+            xl_file = (
+                "National-Genomic-Test-Directory-"
+                "Cancer-November-2020-21.xlsx"
+                )
+
             data = get_data_v1.Data(xl_file)
             print('Seeding with version 1 file:', xl_file)
 
         # Specify the file and script to use for seeding with version 2 data
         elif file_version == '2':
 
-            xl_file = """CONFIDENTIAL-Final-National-Genomic-Test-Directory-Cancer-20-21-v2_pstb.xlsx"""
+            xl_file = (
+                "CONFIDENTIAL-Final-National-Genomic-"
+                "Test-Directory-Cancer-20-21-v2_pstb.xlsx"
+                )
+            
             data = get_data_v2.Data(xl_file)
             print('Seeding with version 2 file:', xl_file)
         

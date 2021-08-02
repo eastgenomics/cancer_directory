@@ -8,7 +8,9 @@ Section 2: Models for data from 2nd directory version (July 2021)
 
 
 class CancerTypeJul21(models.Model):
-    """Table of general cancer types (from test directory worksheet names)"""
+    """Table of general cancer types (from test directory worksheet
+    names)
+    """
 
     cancer_id = models.AutoField(
         primary_key = True,
@@ -112,9 +114,6 @@ class InHouseTestJul21(models.Model):
         max_length=100,
         )
 
-    class Meta:
-        ordering = ['inhouse']
-
     def __str__(self):
         return self.inhouse
 
@@ -214,7 +213,7 @@ class TargetJul21(models.Model):
     hgnc_id = models.CharField(
         verbose_name='HGNC ID',
         max_length=50,
-    )
+        )
 
     def __str__(self):
         return self.target
@@ -243,7 +242,7 @@ class GenomicTestJul21(models.Model):
         SpecialistJul21,
         verbose_name = 'Specialist Test Group',
         on_delete=models.CASCADE,
-    )
+        )
 
     targets_essential = models.ManyToManyField(
         TargetJul21,
@@ -269,19 +268,19 @@ class GenomicTestJul21(models.Model):
         TechnologyJul21,
         verbose_name='Technology',
         on_delete=models.CASCADE,
-    )
+        )
 
     inhouse_id = models.ForeignKey(
         InHouseTestJul21,
         verbose_name='In-House Test',
         on_delete=models.CASCADE,
-    )
+        )
 
     cc_id = models.ForeignKey(
         CommissioningCategoryJul21,
         verbose_name = 'Commissioning Category',
         on_delete=models.CASCADE,
-    )
+        )
 
     eligibility = models.TextField(
         verbose_name='Eligibility Criteria',
@@ -291,25 +290,25 @@ class GenomicTestJul21(models.Model):
         FamilyStructureJul21,
         verbose_name='Optimal Family Structure',
         on_delete=models.CASCADE,
-    )
+        )
 
     provided_id = models.ForeignKey(
         CurrentlyProvidedJul21,
         verbose_name='Currently Provided',
         on_delete=models.CASCADE,
-    )
+        )
 
     citt_id = models.ForeignKey(
         CITTJul21,
         verbose_name = 'CITT Comment',
         on_delete=models.CASCADE,
-    )
+        )
 
     tt_id = models.ForeignKey(
         TTJul21,
         verbose_name = 'TT Code',
         on_delete=models.CASCADE,
-    )
+        )
 
     def __str__(self):
         return self.test_code
@@ -360,7 +359,9 @@ Section 1: Models for data from 1st directory version (November 2020)
 
 
 class CancerTypeNov20(models.Model):
-    """Table of general cancer types (from test directory worksheet names)"""
+    """Table of general cancer types (from test directory worksheet
+    names)
+    """
 
     cancer_id = models.AutoField(
         primary_key = True,
@@ -448,16 +449,14 @@ class InHouseTestNov20(models.Model):
         max_length=100,
         )
 
-    class Meta:
-        ordering = ['inhouse']
-
     def __str__(self):
         return self.inhouse
 
 
 class CurrentlyProvidedNov20(models.Model):
     """Table of possible values for whether test is currently provided
-    in-house"""
+    in-house
+    """
 
     provided_id = models.AutoField(
         primary_key = True,
@@ -487,7 +486,7 @@ class TargetNov20(models.Model):
     hgnc_id = models.CharField(
         verbose_name='HGNC ID',
         max_length=50,
-    )
+        )
 
     def __str__(self):
         return self.target
@@ -529,13 +528,13 @@ class GenomicTestNov20(models.Model):
         TechnologyNov20,
         verbose_name='Technology',
         on_delete=models.CASCADE,
-    )
+        )
 
     inhouse_id = models.ForeignKey(
         InHouseTestNov20,
         verbose_name='In-House Test',
         on_delete=models.CASCADE,
-    )
+        )
 
     eligibility = models.TextField(
         verbose_name='Eligibility Criteria',
@@ -545,7 +544,7 @@ class GenomicTestNov20(models.Model):
         CurrentlyProvidedNov20,
         verbose_name='Currently Provided',
         on_delete=models.CASCADE,
-    )
+        )
 
     def __str__(self):
         return self.test_code

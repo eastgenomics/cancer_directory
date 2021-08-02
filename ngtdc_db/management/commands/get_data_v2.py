@@ -51,7 +51,7 @@ class Data:
             ]
 
         # Create pandas object with dfs as columns A-P of each worksheet
-        df_dict = pd.read_excel(filepath, sheets, usecols = 'B:P')
+        df_dict = pd.read_excel(filepath, sheets, usecols='B:P')
 
         return df_dict
 
@@ -70,7 +70,7 @@ class Data:
             data = df_dict[df]
 
             # Remove rows where all cells are blank
-            data.dropna(axis = 0, how = 'all', inplace = True)
+            data.dropna(axis=0, how='all', inplace=True)
 
             # Reset row index to be a consistent series
             data.index = range(len(data))
@@ -79,8 +79,8 @@ class Data:
 
 
     def rename_columns(self, df_dict):
-        """Renames the columns to make them easier to work with (some original
-        column names contain spaces and parentheses)
+        """Renames the columns to make them easier to work with (some
+        original column names contain spaces and parentheses).
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
@@ -118,16 +118,16 @@ class Data:
 
 
     def replace_merged_cells(self, df_dict):
-        """Columns B-E (tumour group, specialist test group, CI code and name)
-        contain merged cells, which translate to 'NaN' values in df_dict. This
-        function replaces the NaN values from merged cells with the appropriate
-        value.
+        """Columns B-E (tumour group, specialist test group, CI code and
+        name) contain merged cells, which translate to 'NaN' values in
+        df_dict. This function replaces the NaN values from merged cells
+        with the appropriate value.
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            df_dict [dict]: empty cells caused by merging given relevant values
+            df_dict [dict]: values assigned to empty cells caused by merging
         """
 
         for df in df_dict:
@@ -179,33 +179,39 @@ class Data:
 
 
     def TEMPORARY_FIX_REMOVE_BLANK_TC(self, df_dict):
-        """Because test_code is the primary key for the GenomicTest model, all
-        records must have a unique value for this field. Version 2 of the test
-        directory is problematic because many records have a blank test code
-        value, meaning they all get assigned a non-unique value of 'Not
-        specified' (thanks version 2). There is also an issue where two
-        different tests have been assigned the test code 'M150.6'. 
+        """Because test_code is the primary key for the GenomicTest model,
+        all records must have a unique value for this field. Version 2 of
+        the test directory is problematic because many records have a blank
+        test code value, meaning they all get assigned a non-unique value of
+        'Not specified' (thanks version 2).
         
-        This function removes any records where the test code is blank, as well
-        as the two tests with the same test code.
+        There is also an issue where two different tests have been assigned
+        the test code 'M150.6'. 
+        
+        This function removes any records where the test code is blank, as
+        well as the two tests with the same test code.
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            df_dict [dict]: rows with test code = 'Not specified' removed
+            df_dict [dict]: removes rows with test code = 'Not specified'
         """
 
         for df in df_dict:
             data = df_dict[df]
 
             # If a row has a test code value of 'Not specified', drop the row
-            data.drop(data.loc[data['test_code']=='Not specified'].index,
-                inplace=True)
+            data.drop(
+                data.loc[data['test_code']=='Not specified'].index,
+                inplace=True,
+                )
 
             # If a row has a test code value of 'M150.6', drop the row
-            data.drop(data.loc[data['test_code']=='M150.6'].index,
-                inplace=True)
+            data.drop(
+                data.loc[data['test_code']=='M150.6'].index,
+                inplace=True,
+                )
 
             # Reset row index to be a consistent series
             data = data.reset_index
@@ -214,16 +220,18 @@ class Data:
 
 
     def TEMPORARY_FIX_REPLACE_BLANK_TC(self, df_dict):
-        """Because test_code is the primary key for the GenomicTest model, all
-        records must have a unique value for this field. Version 2 of the test
-        directory is problematic because many records have a blank test code
-        value, meaning they all get assigned a non-unique value of 'Not
-        specified' (thanks version 2). There is also an issue where two
-        different tests have been assigned the test code 'M150.6'. 
+        """Because test_code is the primary key for the GenomicTest model,
+        all records must have a unique value for this field. Version 2 of
+        the test directory is problematic because many records have a blank
+        test code value, meaning they all get assigned a non-unique value of
+        'Not specified' (thanks version 2).
+        
+        There is also an issue where two different tests have been assigned
+        the test code 'M150.6'. 
         
         This function replaces any blank test code values with a temporary
-        identifier. The two tests with the same test code of M150.6 are removed
-        to avoid confusion.
+        identifier. The two tests with the same test code of M150.6 are
+        removed to avoid confusion.
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
@@ -237,32 +245,30 @@ class Data:
 
             i = 0
             for row in data.iterrows():
-                # If a test code would be blank:
+
+                # If a test code is blank:
                 if row[1]['test_code'] == 'Not specified':
 
-                    # If the one above it doesn't have a temporary identifier,
+                    # If the row above it doesn't have a temporary identifier,
                     # this is the first temporary test code for that CI
-
                     if 'temp' not in data.iloc[i-1].loc['test_code']:
                         x = 1
 
-                    # If the one above it DOES have a temporary identifer,
+                    # If the row above it DOES have a temporary identifer,
                     # increment the temporary identifier number
-
                     elif 'temp' in data.iloc[i-1].loc['test_code']:
                         x += 1
 
                     # Define a temporary identifier based on the CI and the
                     # incrementing identifier number
-
                     temp_tc = '{ci}.temp_{x}'.format(
-                        ci = row[1]['ci_code'],
-                        x = x
+                        ci=row[1]['ci_code'],
+                        x=x
                         )
 
                     # Replace the empty test_code field with this value
                     data.iloc[i].loc['test_code'] = temp_tc
-                    data.iloc[i].loc['test_name'] = 'No test code/name assigned'
+                    data.iloc[i].loc['test_name'] = 'No test code assigned'
 
                 i += 1
 
@@ -331,7 +337,7 @@ class Data:
             single_df [pandas df]: contains NGTDC data
 
         Returns:
-            single_df [pandas df]: updated with all cells as stripped strings
+            single_df [pandas df]: all cells are now stripped strings
         """
 
         # convert every cell value to a string, and strip whitespace
@@ -343,20 +349,20 @@ class Data:
 
     def targets_to_lists(self, single_df):
         """Each cell in 'targets_essential' and 'targets_desirable' is
-        currently a string, and needs to be converted into a list. Each element
-        of the list should be a string representing a single target from that
-        cell, e.g.
+        currently a string, and needs to be converted into a list. Each
+        element of the list should be a string representing a single target
+        from that cell, e.g.
         
         'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
 
-        Text is converted to uppercase to avoid duplication issues (e.g. '1q2'
-        vs. '1Q2').
+        Text is converted to uppercase to avoid duplication issues 
+        (e.g. '1q2' vs. '1Q2').
 
         Some cells are awkward and need to be managed separately:
         -Empty cells become ['NOT APPLICABLE']
         -Targets which contain sub-lists have to be kept as a whole string
-        -Paired brackets around a target, or unpaired brackets at a target end,
-        are removed
+        -Paired brackets around a target, or unpaired brackets at a target
+        end, are removed
 
         Args:
             single_df [pandas df]: contains NGTDC data
@@ -365,19 +371,18 @@ class Data:
             single_df [pandas df]: cells in targets columns are now lists
         """
 
+        # This version has two columns which are lists of targets
         fields = ['targets_essential', 'targets_desirable']
 
         for field in fields:
-            column = single_df[field]
             i = 0
 
-            for cell in column:
+            for cell in single_df[field]:
                 uppercase = str(cell).upper()
 
                 # If a cell is empty, make it a single-element list
                 if cell == 'Not specified':
                     new_cell_contents = ['Not specified',]
-
 
                 # If splitting on ',' is a problem, take the whole cell
                 # (Note: must be 'types' not 'type', to exclude 'karyotype')
@@ -387,11 +392,9 @@ class Data:
 
                     new_cell_contents = [uppercase,]
 
-
                 # For cells which are a 'standard' list of targets:
                 else:
                     new_cell_contents = []
-
 
                     # If a cell contains PAR1 region (awkward due to commas),
                     par1_region = 'PAR1 REGION (CRLF2, CSF2RA, IL3RA)'
@@ -406,7 +409,6 @@ class Data:
 
                     else:
                         cell_contents = uppercase
-
 
                     # If the cell contains unnecessary preamble, remove it
                     if 'TO INCLUDE DETECTION OF' in cell_contents:
@@ -425,7 +427,6 @@ class Data:
                     else:
                         to_split = cell_contents
 
-
                     # Split cell contents into a list on a comma delimiter
                     old_cell_target_list = to_split.split(',')
 
@@ -434,7 +435,6 @@ class Data:
                         stripped = element.strip()
                         if stripped == '':
                             continue
-
 
                         # If element is contained in brackets, remove them
                         elif ((stripped[0] == '(') and (stripped[-1] == ')'))\
@@ -460,7 +460,6 @@ class Data:
                             target = stripped[:-1]
                             new_cell_contents.append(target)
 
-
                         # Otherwise just append to cell's new list
                         else:
                             target = stripped
@@ -475,9 +474,10 @@ class Data:
 
 
     def UNUSED_scopes_to_lists(self, single_df):
-        """Iterates over column 5 (test_scope) and changes each cell to a list,
-        each element of which is a string representing a single scope of the
-        test. If a cell is empty, it is changed to a single-element list. 
+        """Iterates over column 5 (test_scope) and changes each cell to a
+        list, each element of which is a string representing a single scope
+        of the test. If a cell is empty, it is changed to a single-element
+        list. 
 
         Args:
             single_df [pandas df]: contains NGTDC data
@@ -485,8 +485,6 @@ class Data:
         Returns:
             single_df [pandas df]: cells in column 5 are now lists
         """
-
-        scopes_column = single_df.loc[:, 'test_scope']
 
         i = 0
         for row in single_df.iterrows():
@@ -499,12 +497,14 @@ class Data:
             elif '/' in scope:
                 scope_list = scope.split('/')
                 stripped = [element.strip() for element in scope_list]
+
                 for single_scope in stripped:
                     new_cell.append(single_scope)
             
             elif ';' in scope:
                 scope_list = scope.split(';')
                 stripped = [element.strip() for element in scope_list]
+
                 for single_scope in stripped:
                     new_cell.append(single_scope)
             
@@ -519,9 +519,10 @@ class Data:
 
 
     def UNUSED_tech_to_lists(self, single_df):
-        """Iterates over column 6 (technology) and changes each cell to a list,
-        each element of which is a string representing a single technology. If
-        a cell is empty, it is changed to a single-element list. 
+        """Iterates over column 6 (technology) and changes each cell to a
+        list, each element of which is a string representing a single
+        technology. If a cell is empty, it is changed to a single-element
+        list. 
 
         Args:
             single_df [pandas df]: contains NGTDC data
@@ -541,12 +542,14 @@ class Data:
             elif '/' in technology:
                 tech_list = technology.split('/')
                 stripped = [element.strip() for element in tech_list]
+
                 for tech in stripped:
                     new_cell.append(tech)
             
             elif ';' in technology:
                 tech_list = technology.split(';')
                 stripped = [element.strip() for element in tech_list]
+                
                 for tech in stripped:
                     new_cell.append(tech)
             

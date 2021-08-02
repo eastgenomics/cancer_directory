@@ -69,7 +69,6 @@ class Jul21CIDetailTable(tables.Table):
             ]
 
 
-
 class Nov20MainTable(tables.Table):
     test_code = tables.LinkColumn(
         'nov20_test_detail',
