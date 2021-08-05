@@ -11,10 +11,6 @@ from .models import (
 
 
 class V1MainFilter(django_filters.FilterSet):
-    def __init__(self, *args, **kwargs):
-        super(V1MainFilter, self).__init__(*args, **kwargs)
-        self.filters['ci_code__cancer_id'].label = 'Cancer Type'
-
     # Create a filter for the cancer_type field
     ci_code__cancer_id = django_filters.ChoiceFilter(
 
@@ -48,6 +44,7 @@ class V1MainFilter(django_filters.FilterSet):
 
         # Specify the filter type as a case-insensitive text search
         lookup_expr='icontains',
+
         widget=forms.TextInput(
             attrs={'style': 'width: 10vw; margin-left: 108px',}
             )
@@ -91,6 +88,7 @@ class V1MainFilter(django_filters.FilterSet):
 
         # Specify that no duplicate records are returned
         distinct = True,
+
         widget=forms.TextInput(
             attrs={'style': 'width: 10vw; margin-left: 28px',}
             )
@@ -161,8 +159,10 @@ class V1MainFilter(django_filters.FilterSet):
         )
 
     class Meta:
+        # Specify which model is being filtered
         model = GenomicTest
 
+        # Specify the order of the filters
         fields = [
             'ci_code__cancer_id',
             'ci_code',
@@ -176,6 +176,7 @@ class V1MainFilter(django_filters.FilterSet):
             'inhouse_technology',
             ]
 
+        # Specify which fields should NOT have filters available
         exclude = [
             'currently_provided',
             'inhouse_technology',
@@ -184,10 +185,6 @@ class V1MainFilter(django_filters.FilterSet):
 
 
 class V2MainFilter(django_filters.FilterSet):
-    def __init__(self, *args, **kwargs):
-        super(V2MainFilter, self).__init__(*args, **kwargs)
-        self.filters['ci_code__cancer_id'].label = 'Cancer Type'
-
     ci_code__cancer_id = django_filters.ChoiceFilter(
         field_name='ci_code__cancer_id',
         label='Cancer Type',
@@ -369,10 +366,6 @@ class V2MainFilter(django_filters.FilterSet):
 
 
 class V1CIFilter(django_filters.FilterSet):
-    def __init__(self, *args, **kwargs):
-        super(V1CIFilter, self).__init__(*args, **kwargs)
-        self.filters['cancer_id'].label = 'Cancer Type'
-
     cancer_id = django_filters.ChoiceFilter(
         field_name='cancer_id__cancer_id',
         label='Cancer Type',
@@ -415,10 +408,6 @@ class V1CIFilter(django_filters.FilterSet):
 
 
 class V2CIFilter(django_filters.FilterSet):
-    def __init__(self, *args, **kwargs):
-        super(V2CIFilter, self).__init__(*args, **kwargs)
-        self.filters['cancer_id'].label = 'Cancer Type'
-
     cancer_id = django_filters.ChoiceFilter(
         field_name='cancer_id__cancer_id',
         label='Cancer Type',

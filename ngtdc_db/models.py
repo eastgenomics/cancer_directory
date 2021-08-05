@@ -2,9 +2,7 @@ from django.db import models
 
 
 class CancerType(models.Model):
-    """Table of general cancer types (from test directory worksheet
-    names)
-    """
+    """Table of discrete cancer type values"""
 
     cancer_id = models.AutoField(
         primary_key = True,
@@ -20,7 +18,7 @@ class CancerType(models.Model):
 
 
 class ClinicalIndication(models.Model):
-    """Table of clinical indication (CI) codes and names"""
+    """Table of discrete clinical indication (CI) code/name pair values"""
 
     cancer_id = models.ForeignKey(
         CancerType,
@@ -43,7 +41,7 @@ class ClinicalIndication(models.Model):
 
 
 class SpecialistTestGroup(models.Model):
-    """Table of specialist test groups"""
+    """Table of discrete specialist test group values"""
 
     specialist_id = models.AutoField(
         primary_key = True,
@@ -59,7 +57,7 @@ class SpecialistTestGroup(models.Model):
 
 
 class TestScope(models.Model):
-    """Table of possible test scopes"""
+    """Table of discrete test scope values"""
 
     scope_id = models.AutoField(
         primary_key = True,
@@ -78,7 +76,7 @@ class TestScope(models.Model):
 
 
 class Technology(models.Model):
-    """Table of possible test technologies"""
+    """Table of discrete technology values"""
 
     tech_id = models.AutoField(
         primary_key = True,
@@ -97,7 +95,7 @@ class Technology(models.Model):
 
 
 class CommissioningCategory(models.Model):
-    """Table of commissioning categories"""
+    """Table of discrete commissioning category values"""
 
     cc_id = models.AutoField(
         primary_key = True,
@@ -113,7 +111,7 @@ class CommissioningCategory(models.Model):
 
 
 class OptimalFamilyStructure(models.Model):
-    """Table of optimal family structure values"""
+    """Table of discrete optimal family structure values"""
 
     family_id = models.AutoField(
         primary_key = True,
@@ -129,7 +127,7 @@ class OptimalFamilyStructure(models.Model):
 
 
 class CITTComment(models.Model):
-    """Table of CITT comment values"""
+    """Table of discrete CITT comment values"""
 
     citt_id = models.AutoField(
         primary_key = True,
@@ -144,7 +142,7 @@ class CITTComment(models.Model):
 
 
 class Target(models.Model):
-    """Table of possible genomic targets"""
+    """Table of discrete genomic target values"""
 
     target_id = models.AutoField(
         primary_key = True,
@@ -165,16 +163,16 @@ class Target(models.Model):
 
 
 class GenomicTest(models.Model):
-    """Table of genomic test codes, names, and eligibility criteria"""
+    """Table of discrete genomic test records"""
 
     test_id = models.AutoField(
         primary_key = True,
-    )
+        )
 
     version = models.CharField(
         verbose_name='Test Directory Version',
         max_length=10,
-    )
+        )
 
     ci_code = models.ForeignKey(
         ClinicalIndication,
@@ -279,7 +277,7 @@ class EssentialTarget(models.Model):
         )
 
     def __str__(self):
-        return '{a} {b}'.format(a=self.test_code, b=self.target_id)
+        return '{a} {b}'.format(a=self.test_id, b=self.target_id)
 
 
 class DesirableTarget(models.Model):
@@ -298,4 +296,4 @@ class DesirableTarget(models.Model):
         )
 
     def __str__(self):
-        return '{a} {b}'.format(a=self.test_code, b=self.target_id)
+        return '{a} {b}'.format(a=self.test_id, b=self.target_id)

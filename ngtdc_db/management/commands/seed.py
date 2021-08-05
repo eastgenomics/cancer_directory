@@ -20,21 +20,21 @@ class Command(BaseCommand):
 
 
     def clean_data(self, file_version):
-        """Call get_data.py functions on the specified test directory
-        version.
+        """Call the functions in get_data on the specified directory version.
 
         Args:
-            version: test directory version (1 or 2)
+            file_version: test directory version (currently '1' or '2')
         
         Returns:
-            single_df [pandas dataframe]: data from test directory file
+            single_df [pandas dataframe]: cleaned data from test directory file
+            file_version [string]: string value of the file_version argument
         
         """
 
         xl_file = ''
         data = ''
 
-        # Specify the file and script to use for seeding with version 1 data
+        # Specify the file and get_data script to use for version 1
         if file_version == '1':
 
             xl_file = (
@@ -45,7 +45,7 @@ class Command(BaseCommand):
             data = get_data_v1.Data(xl_file)
             print('Seeding with version 1 file:', xl_file)
 
-        # Specify the file and script to use for seeding with version 2 data
+        # Specify the file and get_data script to use for version 2
         elif file_version == '2':
 
             xl_file = (
@@ -67,6 +67,7 @@ class Command(BaseCommand):
         df_dict_5 = data.default_blank_values(df_dict_4)
         df_dict_6 = data.add_new_fields(df_dict_5)
 
+        # Version 2 requires another function to deal with missing test codes
         if file_version == '2':
             df_dict_7 = data.TEMPORARY_FIX_REPLACE_BLANK_TC(df_dict_6)
         
@@ -84,16 +85,16 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         """Gets data from .xlsx file and inserts into Django database."""
 
-        # Requires a filepath to be provided
+        # Requires a filepath argument to be provided
         if kwargs['file']:
             version = kwargs['file']
 
-            # Applies functions in get_data.py script to provided .xlsx file
+            # Applies the clean_data function
             cleaned_df, version = self.clean_data(version[0])
             print('Pandas dataframe created from Excel file.')
             print('Populating Django database models...')
 
-            # Inserts data into Django database
+            # Inserts this data into the Django database
             inserter.insert_data(cleaned_df, version)
             print('Database population completed.')
         

@@ -8,6 +8,7 @@
         <h1>National Genomic Test Directory for Cancer</h1><br>
         <p>
             <strong>Version currently displayed: </strong>
+
             {% if directory_version == '2' %}
                 July 2021 (most recent)
             
@@ -15,9 +16,11 @@
                 November 2020
 
             {% endif %}
+
             <br>
             Select alternative version:
             <ul>
+
             {% if directory_version == '2' %}
                 <li><a href='/v1/ci/'>November 2020</a></li>
             
@@ -25,6 +28,7 @@
                 <li><a href='/v2/ci/'>July 2021 (most recent version)</a></li>
                 
             {% endif %}
+
             </ul>
         <hr/>​​​​​​​​​​​​​​​​​​​
         </p>
@@ -34,6 +38,7 @@
         <h2>Search/filter by clinical indications</h2>
         <p>
             Alternatively,
+
             {% if directory_version == '2' %}
                 <a href='/' >search/filter by genomic test details</a>
             
@@ -41,6 +46,7 @@
                 <a href='/v1/' >search/filter by genomic test details</a>
                 
             {% endif %}
+            
         </p>
         <br>
 

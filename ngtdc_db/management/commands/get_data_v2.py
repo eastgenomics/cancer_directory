@@ -9,6 +9,7 @@ Script function:
     Rename columns to remove whitespace/parentheses
     Replace NaN values caused by merged cells
     Set default values for blank cells
+    TEMPORARY fix for rows with blank test code
     Add new fields for in-house test and whether currently provided
     Combine worksheets into a single dataframe
     Convert all cells into strings and remove excess whitespace
@@ -33,15 +34,15 @@ class Data:
         """Retrieves the 5 worksheets of test data from the NGTDC.
 
         Args:
-            filepath: path to xlsx file containing the NGTDC
+            filepath: path to file containing NGTDC version 2
 
         Returns:
             df_dict [dict]: dictionary of pandas DataFrames
-                key: df name e.g. 'Sarcomas'
+                key: df/worksheet name e.g. 'Sarcomas'
                 value: dataframe of columns B-P from relevant worksheet
         """
 
-        # Create list of worksheet names
+        # Specify which worksheets to read in
         sheets = [
             'Solid Tumours (2)',
             'Neurological tumours (2)',
@@ -51,7 +52,11 @@ class Data:
             ]
 
         # Create pandas object with dfs as columns A-P of each worksheet
-        df_dict = pd.read_excel(filepath, sheets, usecols='B:P')
+        df_dict = pd.read_excel(
+            filepath,
+            sheets,
+            usecols='B:P',
+            )
 
         return df_dict
 
@@ -70,7 +75,10 @@ class Data:
             data = df_dict[df]
 
             # Remove rows where all cells are blank
-            data.dropna(axis=0, how='all', inplace=True)
+            data.dropna(axis=0,
+            how='all',
+            inplace=True,
+            )
 
             # Reset row index to be a consistent series
             data.index = range(len(data))
@@ -260,7 +268,7 @@ class Data:
                         x += 1
 
                     # Define a temporary identifier based on the CI and the
-                    # incrementing identifier number
+                    # incrementing number
                     temp_tc = '{ci}.temp_{x}'.format(
                         ci=row[1]['ci_code'],
                         x=x

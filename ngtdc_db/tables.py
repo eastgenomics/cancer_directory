@@ -7,11 +7,13 @@ from .models import (
 
 
 class V1MainTable(tables.Table):
+    # Define the test_code field as linking to the test_detail template
     test_code = tables.LinkColumn(
         'v1_test_detail',
         kwargs={"test_id": tables.A("test_id")},
         )
 
+    # Define the ci_code field as linking to the ci_detail template
     ci_code = tables.LinkColumn(
         'v1_ci_detail',
         kwargs={"ci_code": tables.A("ci_code__ci_code")},
@@ -33,11 +35,13 @@ class V1MainTable(tables.Table):
 
 
 class V2MainTable(tables.Table):
+    # Define the test_code field as linking to the test_detail template
     test_code = tables.LinkColumn(
         'v2_test_detail',
         kwargs={"test_id": tables.A("test_id")},
         )
     
+    # Define the ci_code field as linking to the ci_detail template
     ci_code = tables.LinkColumn(
         'v2_ci_detail',
         kwargs={"ci_code": tables.A("ci_code__ci_code")},
@@ -61,6 +65,7 @@ class V2MainTable(tables.Table):
 
 
 class V1CITable(tables.Table):
+    # Define the ci_code field as linking to the ci_detail template
     ci_code = tables.LinkColumn(
         'v1_ci_detail',
         kwargs={"ci_code": tables.A("ci_code")},
@@ -76,6 +81,7 @@ class V1CITable(tables.Table):
 
 
 class V2CITable(tables.Table):
+    # Define the ci_code field as linking to the ci_detail template
     ci_code = tables.LinkColumn(
         'v2_ci_detail',
         kwargs={"ci_code": tables.A("ci_code")},
@@ -91,6 +97,7 @@ class V2CITable(tables.Table):
 
 
 class V1CIDetailTable(tables.Table):
+    # Define the test_code field as linking to the test_detail template
     test_code = tables.LinkColumn(
         'v1_test_detail',
         kwargs={"test_id": tables.A("test_id")},
@@ -107,6 +114,7 @@ class V1CIDetailTable(tables.Table):
 
 
 class V2CIDetailTable(tables.Table):
+    # Define the test_code field as linking to the test_detail template
     test_code = tables.LinkColumn(
         'v2_test_detail',
         kwargs={"test_id": tables.A("test_id")},

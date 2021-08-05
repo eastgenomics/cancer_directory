@@ -20,30 +20,32 @@ from ngtdc_db.models import (
 def insert_data(cleaned_data, directory_version):
 	"""Insert data into the database"""
 	
-	# File containing data from HGNC website
+	# Tab-separated file containing HGNC data
 	hgnc_file = 'hgnc_dump_210727.txt'
+
+	# Read this file into a dataframe
 	df = pd.read_csv(hgnc_file, sep='\t')
 
 	for index, row in cleaned_data.iterrows():
 
-			# Populate cancer types table
+			# Create CancerType table records
 			cancer_type, created = CancerType.objects.get_or_create(
 				cancer_type = row['cancer_type'],
 				)
 
-			# Populate clinical indications table
+			# Create ClinicalIndication table records
 			ci, created = ClinicalIndication.objects.get_or_create(
 				cancer_id = cancer_type,
 				ci_code = row['ci_code'],
 				ci_name = row['ci_name'],
 				)
 
-			# Populate test scopes table
+			# Create TestScope table records
 			test_scope, created = TestScope.objects.get_or_create(
 				test_scope = row['test_scope'],
 				)
 
-			# Populate technologies table
+			# Create Technology table records
 			technology, created = Technology.objects.get_or_create(
 				technology = row['technology'],
 				)
@@ -52,7 +54,8 @@ def insert_data(cleaned_data, directory_version):
 
 				# The specialist_test_group, commissioning_category,
 				# optimal_family_structure, and citt_comment fields do not
-				# exist in directory version 1
+				# exist in directory version 1; so create a record of '-' for
+				# each of them
 
 				specialist_test_group, created = SpecialistTestGroup.objects.\
 					get_or_create(
@@ -73,6 +76,7 @@ def insert_data(cleaned_data, directory_version):
 					citt_comment = '-',
 					)
 
+				# Create GenomicTest table version 1 records
 				genomic_test, created = GenomicTest.objects.\
 					get_or_create(
 						version = '1',
@@ -93,30 +97,30 @@ def insert_data(cleaned_data, directory_version):
 
 			elif directory_version == '2':
 
-				# Populate specialist table
+				# Create SpecialistTestGroup table records
 				specialist_test_group, created = SpecialistTestGroup.objects.\
 					get_or_create(
 						specialist_test_group = row['specialist_group'],
 						)
 
-				# Populate commissioning category table
+				# Create CommissioningCategory table records
 				commissioning, created = CommissioningCategory.objects.\
 					get_or_create(
 						commissioning = row['commissioning'],
 						)
 
-				# Populate family structure table
+				# Create OptimalFamilyStructure table records
 				family_structure, created = OptimalFamilyStructure.objects.\
 					get_or_create(
 						family_structure = row['family_structure'],
 						)
 
-				# Populate CITT comments table
+				# Create CITTComment table records
 				citt_comment, created = CITTComment.objects.get_or_create(
 					citt_comment = row['citt_comment'],
 					)
 
-				# Populate genomic tests table
+				# Create GenomicTest table version 2 records
 				genomic_test, created = GenomicTest.objects.get_or_create(
 					version = '2',
 					ci_code = ci,
@@ -134,29 +138,36 @@ def insert_data(cleaned_data, directory_version):
 					tt_code = row['tt_code'],
 					)
 
-			# Populate target and essential/desirable target link tables
+			# Iterate over individual targets in 'targets_essential' cell
 			for single_target in row['targets_essential']:
 
+				# Get the HGNC ID if it exists
 				hgnc = get_hgnc(df, single_target)
 
+				# Create Target table records
 				target, created = Target.objects.get_or_create(
 					target = single_target,
-					hgnc_id = hgnc
+					hgnc_id = hgnc,
 					)
 
+				# Create EssentialTarget table records
 				essential_link, created = EssentialTarget.objects.\
 					get_or_create(
 						test_id = genomic_test,
 						target_id = target,
 						)
 
+			# Do the same for desirable targets, but only for directory
+			# version 2 (version 1 doesn't have this field)
+
 			if directory_version == '2':
 				for single_target in row['targets_desirable']:
+
 					hgnc = get_hgnc(df, single_target)
 
 					target, created = Target.objects.get_or_create(
 						target = single_target,
-						hgnc_id = hgnc
+						hgnc_id = hgnc,
 						)
 
 					desirable_link, created = DesirableTarget.objects.\
@@ -180,32 +191,35 @@ def get_hgnc(df, single_target):
 	"""
 
     try:
-		# Look for the target in the column of official gene symbols
+		# Get the row index where the supplied target is the official gene
+		# symbol (if such a row exists)
         target_index = df.index[df['symbol'] == single_target]
 
-		# Get the associated HGNC ID
+		# Retrieve the HGNC ID from that row index
         hgnc_id = df.loc[target_index[0], 'hgnc_id']
 
         return hgnc_id
     
+	# If there is no row where the target is the official symbol, 
     except IndexError:
         has_id = False
         i = 0
 
-		# Look through the column of previous official gene symbols
+		# Look in the field for previous official gene symbols instead
         for value in df['prev_symbol']:
 
 			# If the target appears in a value in this column,
             if single_target in str(value):
                 has_id = True
 
-				# Get the associated HGNC ID
+				# Retrieve the associated HGNC ID
                 hgnc_id = df.iloc[i].loc['hgnc_id']
 
                 return hgnc_id
             
             i += 1
         
-		# If the target doesn't appear in the HGNC data its value is 'None'
+		# If the target doesn't appear as either an official or previous gene
+		# symbol, its HGNC ID value is 'None'
         if not has_id:
             return 'None'

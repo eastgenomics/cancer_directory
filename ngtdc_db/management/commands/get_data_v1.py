@@ -34,15 +34,15 @@ class Data:
         """Retrieves the 5 worksheets of test data from the NGTDC.
 
         Args:
-            excel_file [xlsx file]: file containing the NGTDC
+            filepath: path to file containing NGTDC version 1
 
         Returns:
             df_dict [dict]: dictionary of pandas DataFrames
-                keys: df name e.g. 'Sarcomas'
+                keys: df/worksheet name e.g. 'Sarcomas'
                 values: dataframe of columns A-H from relevant worksheet
         """
 
-        # Create list of df names
+        # Specify which worksheets to read in
         sheets = [
             'Solid Tumours (Adult)',
             'Neurological tumours',
@@ -52,7 +52,11 @@ class Data:
             ]
 
         # Create pandas object with dfs as columns A-H of each worksheet
-        df_dict = pd.read_excel(filepath, sheets, usecols='A:H')
+        df_dict = pd.read_excel(
+            filepath,
+            sheets,
+            usecols='A:H',
+            )
 
         return df_dict
 
@@ -71,7 +75,11 @@ class Data:
             data = df_dict[df]
 
             # Remove rows where all cells are blank
-            data.dropna(axis=0, how='all', inplace=True)
+            data.dropna(
+                axis=0,
+                how='all',
+                inplace=True,
+                )
 
             # Reset row index to be a consistent series
             data.index = range(len(data))
@@ -126,15 +134,14 @@ class Data:
 
         for df in df_dict:
             data = df_dict[df]
-            ci_codes_column = data.loc[:, 'ci_code']
 
             i = 0
-            for cell in ci_codes_column:
+            for row in data.iterrows():
 
-                # if cell was merged in the xls worksheet,
-                if pd.isna(cell):
+                # if a row has a blank CI code,
+                if pd.isna(row[1]['ci_code']):
 
-                    # update cell value to that of the cell above it
+                    # update this value to that of the cell above it
                     data.loc[i, 'ci_code'] = data.loc[i-1, 'ci_code']
 
                     # similarly update adjacent cell in column 1 (ci_name)
@@ -189,9 +196,13 @@ class Data:
         for df in df_dict.keys():
             data = df_dict[df]
 
-            # Get field value for current df
+            # Define a default value for currently_provided and in_house_test
+            default_value = 'Not specified'
+
+            # Get df/worksheet name for current df
             key = str(df).strip()
 
+            # Set cancer type values to be consistent across database versions
             if 'neurological' in key.lower():
                 cancer_type = 'Neurological Tumours'
 
@@ -201,8 +212,6 @@ class Data:
             else:
                 cancer_type = key
             
-            default_value = 'Not specified'
-
             # Create new fields and set values for every cell
             data['cancer_type'] = cancer_type
             data['in_house_test'] = default_value
@@ -269,13 +278,13 @@ class Data:
             single_df [pandas df]: contains NGTDC data
 
         Returns:
-            single_df [pandas df]: cells in column 4 are now lists
+            single_df [pandas df]: cells in 'targets_essential' field are
+            now lists
         """
 
-        targets_column = single_df['targets_essential']
-
         i = 0
-        for cell in targets_column:
+        for row in single_df.iterrows():
+            cell = row[1]['targets_essential']
             uppercase = str(cell).upper()
 
             # If cell value isn't specified, make it a single-element list
