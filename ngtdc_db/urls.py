@@ -2,60 +2,59 @@ from django.urls import path
 
 from . import views
 from .views import (
-    Nov20MainList,
-    Nov20CIList,
-    Jul21MainList,
-    Jul21CIList,
+    V1MainList,
+    V2MainList,
+    V1CIList,
+    V2CIList,
     )
 
 
 urlpatterns = [
     path(
+        'v1/', 
+        V1MainList.as_view(),
+        name='v1_main_display',
+        ),
+
+    path(
         '',
-        Jul21MainList.as_view(),
-        name='jul21_main_list',
-        ),
-    
-    path(
-        'Jul21_CI_List/',
-        Jul21CIList.as_view(),
-        name='jul21_ci_list',
+        V2MainList.as_view(),
+        name='v2_main_display',
         ),
 
     path(
-        'Jul21_Test_Detail/<str:test_code>/',
-        views.jul21_test_detail,
-        name='jul21_test_detail',
+        'v1/ci/',
+        V1CIList.as_view(),
+        name='v1_ci_display',
         ),
 
     path(
-        'Jul21_CI_Detail/<str:ci_code>/',
-        views.jul21_ci_detail,
-        name='jul21_ci_detail',
-        ),
-
-
-    path(
-        'Nov20_Main_List/', 
-        Nov20MainList.as_view(),
-        name='nov20_main_list',
+        'v2/ci/',
+        V2CIList.as_view(),
+        name='v2_ci_display',
         ),
 
     path(
-        'Nov20_CI_List/',
-        Nov20CIList.as_view(),
-        name='nov20_ci_list',
+        'v1/test/<str:test_id>/',
+        views.v1_test_detail,
+        name='v1_test_detail',
         ),
 
     path(
-        'Nov20_Test_Detail/<str:test_code>/',
-        views.nov20_test_detail,
-        name='nov20_test_detail',
+        'v2/test/<str:test_id>/',
+        views.v2_test_detail,
+        name='v2_test_detail',
         ),
 
     path(
-        'Nov20_CI_Detail/<str:ci_code>/',
-        views.nov20_ci_detail,
-        name='nov20_ci_detail',
+        'v1/ci/<str:ci_code>/',
+        views.v1_ci_detail,
+        name='v1_ci_detail',
+        ),
+
+    path(
+        'v2/ci/<str:ci_code>/',
+        views.v2_ci_detail,
+        name='v2_ci_detail',
         ),
 ]

@@ -6,8 +6,16 @@
     <div>
         <h1>National Genomic Test Directory for Cancer</h1>
         <p>
-            <strong>Version currently displayed: </strong>July 2021 (most recent)
-            <br><a href='/'>Back to table view</a>
+            <strong>Version currently displayed: </strong>
+            {% if directory_version == '2' %}
+                July 2021 (most recent)
+                <br><a href='/'>Back to table view</a>
+            
+            {% elif directory_version == '1' %}
+                November 2020
+                <br><a href='/v1/'>Back to table view</a>
+
+            {% endif %} 
         </p><br>
 
         <h2>Individual Test Details:</h2>
@@ -19,13 +27,15 @@
             </strong>
         </p>
 
+        {% if directory_version == '2' %}
         <p>
             <strong>Specialist Test Group</strong>
             <br>{{ test_record.specialist_id }}
         </p>
+        {% endif %}
 
         <p>
-            <strong>Currently provided: </strong>{{ test_record.provided_id}}
+            <strong>Currently provided: </strong>{{ test_record.currently_provided}}
         </p>
         ​<hr/>
     </div>
@@ -38,7 +48,14 @@
 
         <p>
             <strong>Clinical Indication</strong>
-            <br><a href='/Jul21_CI_Detail/{{ test_record.ci_code.ci_code }}/'>{{ test_record.ci_code }}</a>
+            {% if directory_version == '2' %}
+                <br><a href='/v2/ci/{{ test_record.ci_code.ci_code }}/'>{{ test_record.ci_code }}</a>
+            
+            {% elif directory_version == '1' %}
+                <br><a href='/v1/ci/{{ test_record.ci_code.ci_code }}/'>{{ test_record.ci_code }}</a>
+
+            {% endif %} 
+            
         </p>
 
         <p>
@@ -53,7 +70,7 @@
 
         <p>
             <strong>In-House Test</strong>
-            <br>{{ test_record.inhouse_id }}
+            <br>{{ test_record.inhouse_technology }}
         </p>
 
         <p>
@@ -66,6 +83,7 @@
             </ul>
         </p>
 
+        {% if directory_version == '2' %}
         <p>
             <strong>Desirable Targets ({{ desirable_links.count }})</strong>
             <br>HGNC ID in brackets if available
@@ -82,23 +100,24 @@
         </p>
 
         <p>
-            <strong>Commissioning Category</strong>
-            <br>{{ test_record.cc_id }}
-        </p>
-
-        <p>
-            <strong>Eligibility Criteria</strong>
-            <br>{{ test_record.eligibility }}
-        </p>
-
-        <p>
             <strong>CITT Comment</strong>
             <br>{{ test_record.citt_id }}
         </p>
 
         <p>
             <strong>TT Code</strong>
-            <br>{{ test_record.tt_id }}
+            <br>{{ test_record.tt_code }}
+        </p>
+        
+        <p>
+            <strong>Commissioning Category</strong>
+            <br>{{ test_record.cc_id }}
+        </p>
+        {% endif %}
+
+        <p>
+            <strong>Eligibility Criteria</strong>
+            <br>{{ test_record.eligibility }}
         </p>
     </div>
 

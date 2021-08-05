@@ -1,34 +1,25 @@
 import django_filters
 from django import forms
-from .models import (
-    CancerTypeNov20,
-    ClinicalIndicationNov20,
-    ScopeNov20,
-    TechnologyNov20,
-    CurrentlyProvidedNov20,
-    InHouseTestNov20,
-    GenomicTestNov20,
 
-    CancerTypeJul21,
-    ClinicalIndicationJul21,
-    ScopeJul21,
-    TechnologyJul21,
-    CurrentlyProvidedJul21,
-    InHouseTestJul21,
-    GenomicTestJul21,
+from .models import (
+    CancerType,
+    ClinicalIndication,
+    TestScope,
+    Technology,
+    GenomicTest,
     )
 
 
-class Jul21MainFilter(django_filters.FilterSet):
+class V1MainFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
-        super(Jul21MainFilter, self).__init__(*args, **kwargs)
+        super(V1MainFilter, self).__init__(*args, **kwargs)
         self.filters['ci_code__cancer_id'].label = 'Cancer Type'
 
     # Create a filter for the cancer_type field
     ci_code__cancer_id = django_filters.ChoiceFilter(
 
         # Specify which field of the table is being filtered
-        # In this case field is from another table, define the path via keys
+        # In this case field is from another table, so define the path via keys
         field_name='ci_code__cancer_id',
 
         # Specify the human-readable name for the filter
@@ -36,15 +27,15 @@ class Jul21MainFilter(django_filters.FilterSet):
 
         # Define the possible values the field can be filtered on
         choices = [
-            (CancerTypeJul21.objects.get(pk=x).cancer_id,
-            CancerTypeJul21.objects.get(pk=x).cancer_type) for x in \
-                CancerTypeJul21.objects.all().\
+            (CancerType.objects.get(pk=x).cancer_id,
+            CancerType.objects.get(pk=x).cancer_type) for x in \
+                CancerType.objects.all().\
                     values_list('cancer_id', flat=True).distinct()
             ],
 
         # Format the appearance of the filter box
         widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 59px',}
+            attrs={'style': 'width: 10vw; margin-left: 72px',}
             )
         )
 
@@ -57,9 +48,8 @@ class Jul21MainFilter(django_filters.FilterSet):
 
         # Specify the filter type as a case-insensitive text search
         lookup_expr='icontains',
-
         widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 95px',}
+            attrs={'style': 'width: 10vw; margin-left: 108px',}
             )
         )
 
@@ -69,7 +59,7 @@ class Jul21MainFilter(django_filters.FilterSet):
         help_text = '(Clinical indication name e.g. Colorectal carcinoma)',
         lookup_expr='icontains',
         widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 89px',}
+            attrs={'style': 'width: 10vw; margin-left: 102px',}
             )
         )
 
@@ -79,7 +69,7 @@ class Jul21MainFilter(django_filters.FilterSet):
         help_text = '(Test code e.g. M1.2)',
         lookup_expr='icontains',
         widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 78px',}
+            attrs={'style': 'width: 10vw; margin-left: 91px',}
             )
         )
 
@@ -89,7 +79,168 @@ class Jul21MainFilter(django_filters.FilterSet):
         help_text = '(Test name e.g. KRAS hotspot)',
         lookup_expr='icontains',
         widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 73px',}
+            attrs={'style': 'width: 10vw; margin-left: 86px',}
+            )
+        )
+
+    targets_essential = django_filters.CharFilter(
+        field_name='targets_essential__target',
+        label='Targets (Essential)',
+        help_text = '(Test targets e.g. KRAS)',
+        lookup_expr='icontains',
+
+        # Specify that no duplicate records are returned
+        distinct = True,
+        widget=forms.TextInput(
+            attrs={'style': 'width: 10vw; margin-left: 28px',}
+            )
+        )
+
+    scope_id = django_filters.ChoiceFilter(
+        field_name='scope_id',
+        label='Test Scope',
+
+        choices = [
+            (TestScope.objects.get(pk=x).scope_id,
+            TestScope.objects.get(pk=x).test_scope) for x in \
+                TestScope.objects.all().\
+                    values_list('scope_id', flat=True).distinct()
+            ],
+
+        widget=forms.Select(
+            attrs={'style': 'width: 10vw; margin-left: 83px',}
+            )
+        )
+    
+    tech_id = django_filters.ChoiceFilter(
+        field_name='tech_id',
+        label='Technology',
+
+        choices = [
+            (Technology.objects.get(pk=x).tech_id,
+            Technology.objects.get(pk=x).technology) for x in \
+                Technology.objects.all().\
+                    values_list('tech_id', flat=True).distinct()
+            ],
+
+        widget=forms.Select(
+            attrs={'style': 'width: 10vw; margin-left: 78px',}
+            )
+        )
+
+    currently_provided = django_filters.ChoiceFilter(
+        field_name='currently_provided',
+        label='Currently Provided',
+
+        choices = [
+            (x, x) for x in GenomicTest.objects.all().values_list(
+                'currently_provided',
+                flat=True,
+                ).distinct()
+            ],
+
+        widget=forms.Select(
+            attrs={'style': 'width: 10vw; margin-left: 23px',}
+            )
+        )
+
+    inhouse_id = django_filters.ChoiceFilter(
+        field_name='inhouse_technology',
+        label='In-House Technology',
+
+        choices = [
+            (x, x) for x in GenomicTest.objects.all().values_list(
+                'inhouse_technology',
+                flat=True,
+                ).distinct()
+            ],
+
+        widget=forms.Select(
+            attrs={'style': 'width: 10vw;',}
+            )
+        )
+
+    class Meta:
+        model = GenomicTest
+
+        fields = [
+            'ci_code__cancer_id',
+            'ci_code',
+            'ci_name',
+            'test_code',
+            'test_name',
+            'targets_essential',
+            'scope_id',
+            'tech_id',
+            'currently_provided',
+            'inhouse_technology',
+            ]
+
+        exclude = [
+            'currently_provided',
+            'inhouse_technology',
+            'eligibility',
+            ]
+
+
+class V2MainFilter(django_filters.FilterSet):
+    def __init__(self, *args, **kwargs):
+        super(V2MainFilter, self).__init__(*args, **kwargs)
+        self.filters['ci_code__cancer_id'].label = 'Cancer Type'
+
+    ci_code__cancer_id = django_filters.ChoiceFilter(
+        field_name='ci_code__cancer_id',
+        label='Cancer Type',
+
+        choices = [
+            (CancerType.objects.get(pk=x).cancer_id,
+            CancerType.objects.get(pk=x).cancer_type) for x in \
+                CancerType.objects.all().\
+                    values_list('cancer_id', flat=True).distinct()
+            ],
+
+        widget=forms.Select(
+            attrs={'style': 'width: 10vw; margin-left: 72px',}
+            )
+        )
+
+    ci_code = django_filters.CharFilter(
+        field_name='ci_code__ci_code',
+        label='CI Code',
+        help_text = '(Clinical indication code e.g. M1)',
+        lookup_expr='icontains',
+        widget=forms.TextInput(
+            attrs={'style': 'width: 10vw; margin-left: 108px',}
+            )
+        )
+
+    ci_name = django_filters.CharFilter(
+        field_name='ci_code__ci_name',
+        label='CI Name',
+        help_text = '(Clinical indication name e.g. Colorectal carcinoma)',
+        lookup_expr='icontains',
+        widget=forms.TextInput(
+            attrs={'style': 'width: 10vw; margin-left: 102px',}
+            )
+        )
+
+    test_code = django_filters.CharFilter(
+        field_name='test_code',
+        label='Test Code',
+        help_text = '(Test code e.g. M1.2)',
+        lookup_expr='icontains',
+        widget=forms.TextInput(
+            attrs={'style': 'width: 10vw; margin-left: 91px',}
+            )
+        )
+
+    test_name = django_filters.CharFilter(
+        field_name='test_name',
+        label='Test Name',
+        help_text = '(Test name e.g. KRAS hotspot)',
+        lookup_expr='icontains',
+        widget=forms.TextInput(
+            attrs={'style': 'width: 10vw; margin-left: 86px',}
             )
         )
 
@@ -100,7 +251,7 @@ class Jul21MainFilter(django_filters.FilterSet):
         lookup_expr='icontains',
         distinct = True,
         widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 15px',}
+            attrs={'style': 'width: 10vw; margin-left: 28px',}
             )
         )
 
@@ -109,12 +260,9 @@ class Jul21MainFilter(django_filters.FilterSet):
         label='Targets (Desirable)',
         help_text = '(Optional test targets e.g. KRAS)',
         lookup_expr='icontains',
-
-        # Specify that no duplicate records are returned
         distinct = True,
-
         widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 11px',}
+            attrs={'style': 'width: 10vw; margin-left: 24px',}
             )
         )
 
@@ -123,14 +271,14 @@ class Jul21MainFilter(django_filters.FilterSet):
         label='Test Scope',
 
         choices = [
-            (ScopeJul21.objects.get(pk=x).scope_id,
-            ScopeJul21.objects.get(pk=x).test_scope) for x in \
-                ScopeJul21.objects.all().\
+            (TestScope.objects.get(pk=x).scope_id,
+            TestScope.objects.get(pk=x).test_scope) for x in \
+                TestScope.objects.all().\
                     values_list('scope_id', flat=True).distinct()
             ],
 
         widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 70px',}
+            attrs={'style': 'width: 10vw; margin-left: 83px',}
             )
         )
     
@@ -139,60 +287,60 @@ class Jul21MainFilter(django_filters.FilterSet):
         label='Technology',
 
         choices = [
-            (TechnologyJul21.objects.get(pk=x).tech_id,
-            TechnologyJul21.objects.get(pk=x).technology) for x in \
-                TechnologyJul21.objects.all().\
+            (Technology.objects.get(pk=x).tech_id,
+            Technology.objects.get(pk=x).technology) for x in \
+                Technology.objects.all().\
                     values_list('tech_id', flat=True).distinct()
             ],
 
         widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 65px',}
+            attrs={'style': 'width: 10vw; margin-left: 78px',}
             )
         )
 
     provided_id = django_filters.ChoiceFilter(
-        field_name='provided_id',
+        field_name='currently_provided',
         label='Currently Provided',
 
         choices = [
-            (CurrentlyProvidedJul21.objects.get(pk=x).provided_id,
-            CurrentlyProvidedJul21.objects.get(pk=x).provided) for x in \
-                CurrentlyProvidedJul21.objects.all().\
-                    values_list('provided_id', flat=True).distinct()
+            (x, x) for x in GenomicTest.objects.all().values_list(
+                'currently_provided',
+                flat=True,
+                ).distinct()
             ],
 
         widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 10px',}
+            attrs={'style': 'width: 10vw; margin-left: 23px',}
             )
         )
 
     inhouse_id = django_filters.ChoiceFilter(
-        field_name='inhouse_id',
-        label='In-House Test',
+        field_name='inhouse_technology',
+        label='In-House Technology',
 
         choices = [
-            (InHouseTestJul21.objects.get(pk=x).inhouse_id,
-            InHouseTestJul21.objects.get(pk=x).inhouse) for x in \
-                InHouseTestJul21.objects.all().\
-                    values_list('inhouse_id', flat=True).distinct()
+            (x, x) for x in GenomicTest.objects.all().values_list(
+                'inhouse_technology',
+                flat=True,
+                ).distinct()
             ],
 
         widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 48px',}
+            attrs={'style': 'width: 10vw;'}
             )
         )
 
     tt_code = django_filters.CharFilter(
-        field_name='tt_id__tt_code',
+        field_name='tt_code',
         label='TT Code',
         lookup_expr='icontains',
         widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 91px',}
+            attrs={'style': 'width: 10vw; margin-left: 104px',}
             )
         )
 
     class Meta:
-        model = GenomicTestJul21
+        model = GenomicTest
 
         fields = [
             'ci_code__cancer_id',
@@ -204,8 +352,8 @@ class Jul21MainFilter(django_filters.FilterSet):
             'targets_desirable',
             'scope_id',
             'tech_id',
-            'provided_id',
-            'inhouse_id',
+            'currently_provided',
+            'inhouse_technology',
             'tt_code',
             ]
 
@@ -215,13 +363,14 @@ class Jul21MainFilter(django_filters.FilterSet):
             'eligibility',
             'family_id',
             'citt_id',
-            'tt_id'
+            'currently_provided',
+            'inhouse_technology',
             ]
 
 
-class Jul21CIFilter(django_filters.FilterSet):
+class V1CIFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
-        super(Jul21CIFilter, self).__init__(*args, **kwargs)
+        super(V1CIFilter, self).__init__(*args, **kwargs)
         self.filters['cancer_id'].label = 'Cancer Type'
 
     cancer_id = django_filters.ChoiceFilter(
@@ -229,9 +378,9 @@ class Jul21CIFilter(django_filters.FilterSet):
         label='Cancer Type',
 
         choices = [
-            (CancerTypeJul21.objects.get(pk=x).cancer_id,
-            CancerTypeJul21.objects.get(pk=x).cancer_type) for x in \
-                CancerTypeJul21.objects.all().\
+            (CancerType.objects.get(pk=x).cancer_id,
+            CancerType.objects.get(pk=x).cancer_type) for x in \
+                CancerType.objects.all().\
                     values_list('cancer_id', flat=True).distinct()
             ],
 
@@ -261,170 +410,13 @@ class Jul21CIFilter(django_filters.FilterSet):
         )
 
     class Meta:
-        model = ClinicalIndicationJul21
+        model = ClinicalIndication
         exclude = []
 
 
-class Nov20MainFilter(django_filters.FilterSet):
+class V2CIFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
-        super(Nov20MainFilter, self).__init__(*args, **kwargs)
-        self.filters['ci_code__cancer_id'].label = 'Cancer Type'
-
-    ci_code__cancer_id = django_filters.ChoiceFilter(
-        field_name='ci_code__cancer_id',
-        label='Cancer Type',
-
-        choices = [
-            (CancerTypeNov20.objects.get(pk=x).cancer_id,
-            CancerTypeNov20.objects.get(pk=x).cancer_type) for x in \
-                CancerTypeNov20.objects.all().\
-                    values_list('cancer_id', flat=True).distinct()
-            ],
-
-        widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 59px',}
-            )
-        )
-
-    ci_code = django_filters.CharFilter(
-        field_name='ci_code__ci_code',
-        label='CI Code',
-        help_text = '(Clinical indication code e.g. M1)',
-        lookup_expr='icontains',
-        widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 95px',}
-            )
-        )
-
-    ci_name = django_filters.CharFilter(
-        field_name='ci_code__ci_name',
-        label='CI Name',
-        help_text = '(Clinical indication name e.g. Colorectal carcinoma)',
-        lookup_expr='icontains',
-        widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 89px',}
-            )
-        )
-
-    test_code = django_filters.CharFilter(
-        field_name='test_code',
-        label='Test Code',
-        help_text = '(Test code e.g. M1.2)',
-        lookup_expr='icontains',
-        widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 78px',}
-            )
-        )
-
-    test_name = django_filters.CharFilter(
-        field_name='test_name',
-        label='Test Name',
-        help_text = '(Test name e.g. KRAS hotspot)',
-        lookup_expr='icontains',
-        widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 73px',}
-            )
-        )
-
-    targets_essential = django_filters.CharFilter(
-        field_name='targets_essential__target',
-        label='Targets (Essential)',
-        help_text = '(Test targets e.g. KRAS)',
-        lookup_expr='icontains',
-        distinct = True,
-        widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 15px',}
-            )
-        )
-
-    scope_id = django_filters.ChoiceFilter(
-        field_name='scope_id',
-        label='Test Scope',
-
-        choices = [
-            (ScopeNov20.objects.get(pk=x).scope_id,
-            ScopeNov20.objects.get(pk=x).test_scope) for x in \
-                ScopeNov20.objects.all().\
-                    values_list('scope_id', flat=True).distinct()
-            ],
-
-        widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 70px',}
-            )
-        )
-    
-    tech_id = django_filters.ChoiceFilter(
-        field_name='tech_id',
-        label='Technology',
-
-        choices = [
-            (TechnologyNov20.objects.get(pk=x).tech_id,
-            TechnologyNov20.objects.get(pk=x).technology) for x in \
-                TechnologyNov20.objects.all().\
-                    values_list('tech_id', flat=True).distinct()
-            ],
-
-        widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 65px',}
-            )
-        )
-
-    provided_id = django_filters.ChoiceFilter(
-        field_name='provided_id',
-        label='Currently Provided',
-
-        choices = [
-            (CurrentlyProvidedNov20.objects.get(pk=x).provided_id,
-            CurrentlyProvidedNov20.objects.get(pk=x).provided) for x in \
-                CurrentlyProvidedNov20.objects.all().\
-                    values_list('provided_id', flat=True).distinct()
-            ],
-
-        widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 10px',}
-            )
-        )
-
-    inhouse_id = django_filters.ChoiceFilter(
-        field_name='inhouse_id',
-        label='In-House Test',
-
-        choices = [
-            (InHouseTestNov20.objects.get(pk=x).inhouse_id,
-            InHouseTestNov20.objects.get(pk=x).inhouse) for x in \
-                InHouseTestNov20.objects.all().\
-                    values_list('inhouse_id', flat=True).distinct()
-            ],
-
-        widget=forms.Select(
-            attrs={'style': 'width: 10vw; margin-left: 48px',}
-            )
-        )
-
-    class Meta:
-        model = GenomicTestNov20
-
-        fields = [
-            'ci_code__cancer_id',
-            'ci_code',
-            'ci_name',
-            'test_code',
-            'test_name',
-            'targets_essential',
-            'scope_id',
-            'tech_id',
-            'provided_id',
-            'inhouse_id',
-            ]
-
-        exclude = [
-            'eligibility',
-            ]
-
-
-class Nov20CIFilter(django_filters.FilterSet):
-    def __init__(self, *args, **kwargs):
-        super(Nov20CIFilter, self).__init__(*args, **kwargs)
+        super(V2CIFilter, self).__init__(*args, **kwargs)
         self.filters['cancer_id'].label = 'Cancer Type'
 
     cancer_id = django_filters.ChoiceFilter(
@@ -432,9 +424,9 @@ class Nov20CIFilter(django_filters.FilterSet):
         label='Cancer Type',
 
         choices = [
-            (CancerTypeNov20.objects.get(pk=x).cancer_id,
-            CancerTypeNov20.objects.get(pk=x).cancer_type) for x in \
-                CancerTypeNov20.objects.all().\
+            (CancerType.objects.get(pk=x).cancer_id,
+            CancerType.objects.get(pk=x).cancer_type) for x in \
+                CancerType.objects.all().\
                     values_list('cancer_id', flat=True).distinct()
             ],
 
@@ -464,5 +456,5 @@ class Nov20CIFilter(django_filters.FilterSet):
         )
 
     class Meta:
-        model = ClinicalIndicationNov20
+        model = ClinicalIndication
         exclude = []

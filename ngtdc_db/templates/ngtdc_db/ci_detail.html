@@ -7,8 +7,16 @@
     <div>
         <h1>National Genomic Test Directory for Cancer</h1>
         <p>
-            <strong>Version currently displayed: </strong>July 2021 (most recent)
-            <br><a href='/Jul21_CI_List/'>Back to table view</a>
+            <strong>Version currently displayed: </strong>
+            {% if directory_version == '2' %}
+                July 2021 (most recent)
+                <br><a href='/v2/ci/'>Back to table view</a>
+            
+            {% elif directory_version == '1' %}
+                November 2020
+                <br><a href='/v1/ci/'>Back to table view</a>
+
+            {% endif %}            
         </p>
         <br>
 

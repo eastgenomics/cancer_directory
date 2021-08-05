@@ -190,7 +190,17 @@ class Data:
             data = df_dict[df]
 
             # Get field value for current df
-            cancer_type = str(df).strip()
+            key = str(df).strip()
+
+            if 'neurological' in key.lower():
+                cancer_type = 'Neurological Tumours'
+
+            elif 'paediatric' in key.lower():
+                cancer_type = 'Solid Tumours (Paediatric)'
+            
+            else:
+                cancer_type = key
+            
             default_value = 'Not specified'
 
             # Create new fields and set values for every cell

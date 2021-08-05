@@ -8,21 +8,39 @@
         <h1>National Genomic Test Directory for Cancer</h1><br>
         <p>
             <strong>Version currently displayed: </strong>
-            November 2020
+            {% if directory_version == '2' %}
+                July 2021 (most recent)
+            
+            {% elif directory_version == '1' %}
+                November 2020
+
+            {% endif %}
             <br>
             Select alternative version:
             <ul>
-                <li><a href='/Jul21_CI_List/' >July 2021 (most recent)</a></li>
+            {% if directory_version == '2' %}
+                <li><a href='/v1/ci/'>November 2020</a></li>
+            
+            {% elif directory_version == '1' %}
+                <li><a href='/v2/ci/'>July 2021 (most recent version)</a></li>
+                
+            {% endif %}
             </ul>
-            <hr/>
-        </p>​​​​​​​​​​​​​​​​​​​
+        <hr/>​​​​​​​​​​​​​​​​​​​
+        </p>
     </div>
-​​​​​​​​​​​
+
     <div>
         <h2>Search/filter by clinical indications</h2>
         <p>
-            Alternatively, 
-            <a href='/Nov20_Main_List/'>search/filter by genomic test details</a>
+            Alternatively,
+            {% if directory_version == '2' %}
+                <a href='/' >search/filter by genomic test details</a>
+            
+            {% elif directory_version == '1' %}
+                <a href='/v1/' >search/filter by genomic test details</a>
+                
+            {% endif %}
         </p>
         <br>
 
