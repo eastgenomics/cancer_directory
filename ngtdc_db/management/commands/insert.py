@@ -20,10 +20,8 @@ from ngtdc_db.models import (
 def insert_data(cleaned_data, directory_version):
 	"""Insert data into the database"""
 	
-	# Tab-separated file containing HGNC data
+	# Define a tab-separated file containing HGNC data, and read into a df
 	hgnc_file = 'hgnc_dump_210727.txt'
-
-	# Read this file into a dataframe
 	df = pd.read_csv(hgnc_file, sep='\t')
 
 	for index, row in cleaned_data.iterrows():
@@ -191,11 +189,11 @@ def get_hgnc(df, single_target):
 	"""
 
     try:
-		# Get the row index where the supplied target is the official gene
-		# symbol (if such a row exists)
+		# If there is a row where the supplied target is the official gene
+		# symbol, get that row's index
         target_index = df.index[df['symbol'] == single_target]
 
-		# Retrieve the HGNC ID from that row index
+		# Retrieve the HGNC ID at that row index
         hgnc_id = df.loc[target_index[0], 'hgnc_id']
 
         return hgnc_id
