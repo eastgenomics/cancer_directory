@@ -295,7 +295,7 @@ class Data:
             # (Note: must be 'types' rather than 'type' to exclude 'karyotype')
             elif ('TRANSCRIPTS' in uppercase) or \
                 ('TYPES' in uppercase) or \
-                ('MLPA' in single_df.iloc[i].loc['technology']):
+                ('MLPA' in uppercase):
 
                 new_cell_contents = [uppercase]
 
