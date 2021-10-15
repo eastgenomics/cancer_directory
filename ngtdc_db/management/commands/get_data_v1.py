@@ -178,6 +178,26 @@ class Data:
         return df_dict
 
 
+    def replace_newlines(self, df_dict):
+        """Replaces any newline character in any cell with a space
+
+        Args:
+            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+
+        Returns:
+            df_dict [dict]: newline characters replaced with spaces
+        """
+
+        for df in df_dict:
+            
+            # Replace all newline characters in any dataframe cell with spaces
+            df_dict[df] = df_dict[df].applymap(
+                lambda x: x.replace('\n', ' ')
+                )
+
+        return df_dict
+
+
     def add_new_fields(self, df_dict):
         """Creates 3 additional fields for each test in each df:
 
@@ -295,7 +315,7 @@ class Data:
             # (Note: must be 'types' rather than 'type' to exclude 'karyotype')
             elif ('TRANSCRIPTS' in uppercase) or \
                 ('TYPES' in uppercase) or \
-                ('MLPA' in uppercase):
+                (uppercase == '1P, 3, 6, 8'):
 
                 new_cell_contents = [uppercase]
 

@@ -252,10 +252,10 @@ class Data:
             data = df_dict[df]
 
             i = 0
-            for row in data.iterrows():
+            for index, row in data.iterrows():
 
                 # If a test code is blank:
-                if row[1]['test_code'] == 'Not specified':
+                if row['test_code'] == 'Not specified':
 
                     # If the row above it doesn't have a temporary identifier,
                     # this is the first temporary test code for that CI
@@ -270,7 +270,7 @@ class Data:
                     # Define a temporary identifier based on the CI and the
                     # incrementing number
                     temp_tc = '{ci}.temp_{x}'.format(
-                        ci=row[1]['ci_code'],
+                        ci=row['ci_code'],
                         x=x
                         )
 
@@ -396,7 +396,7 @@ class Data:
                 # (Note: must be 'types' not 'type', to exclude 'karyotype')
                 elif ('TRANSCRIPTS' in uppercase) or \
                     ('TYPES' in uppercase) or \
-                    ('MLPA' in uppercase):
+                    (uppercase == '1P, 3, 6, 8'):
 
                     new_cell_contents = [uppercase,]
 
