@@ -1,29 +1,43 @@
 #!usr/bin/env python
 
 """
-National Genomic Test Directory for Cancer (NGTDC) *VERSION 2*
 
-Script function:
-    Extract data from the NGTDC
+THIS SCRIPT SPECIFICALLY APPLIES TO THE DRAFT FORM OF VERSION 2
+
+National Genomic Test Directory for Cancer (NGTDC)
+
+This script defines functions to access the National Genomic Test 
+Directory for Cancer (in the form of a downloaded MS Excel file), 
+convert its worksheets into a dictionary of pandas dataframes, combine
+them into a single dataframe, and format the data for subsequent
+insertion into a database. The script is accessed by the seed.py
+script.
+
+Functions:
+    Get data as a dictionary of pandas dataframes
     Remove any completely blank rows
-    Rename columns to remove whitespace/parentheses
-    Replace NaN values caused by merged cells
-    Set default values for blank cells
+    Rename columns to be more programming-friendly
+    Replace NaN values caused by merged cells in the original file
     TEMPORARY fix for rows with blank test code
-    Add new fields for in-house test and whether currently provided
+    Add additional requested fields
     Combine worksheets into a single dataframe
+    Replace any newline characters with spaces
+    Set default values for blank cells
     Convert all cells into strings and remove excess whitespace
     Convert cells in the 'targets' column into lists of targets
 
 Inputs:
-    An .xlsx file of the NGTDC
+    filepath: path to an .xlsx file containing data for the draft second
+        version of the NGTDC
 
 Returns:
-    single_df: pandas dataframe with information on each test
+    single_df [pandas dataframe]: data converted into a dataframe
 
 """
 
+
 import pandas as pd
+
 
 class Data:
     def __init__(self, filepath):
@@ -31,15 +45,19 @@ class Data:
 
 
     def get_xl_data(self, filepath):
-        """Retrieves the 5 worksheets of test data from the NGTDC.
+        """
+        Accesses an .xlsx file containing data for the draft second
+        version of the NGTDC, and converts each worksheet into a pandas
+        dataframe. Creates a dictionary of these dataframes named
+        df_dict.
 
         Args:
-            filepath: path to file containing NGTDC version 2
+            filepath: path to .xlsx file containing NGTDC data
 
         Returns:
             df_dict [dict]: dictionary of pandas DataFrames
-                key: df/worksheet name e.g. 'Sarcomas'
-                value: dataframe of columns B-P from relevant worksheet
+                keys: worksheet name e.g. 'Sarcomas'
+                values: dataframe of columns A-H from relevant worksheet
         """
 
         # Specify which worksheets to read in
@@ -61,40 +79,16 @@ class Data:
         return df_dict
 
 
-    def remove_blank_rows(self, df_dict):
-        """Removes any rows where all cells have NaN values.
-
-        Args:
-            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
-
-        Returns:
-            df_dict [dict]: blank rows removed from each df
-        """
-
-        for df in df_dict:
-            data = df_dict[df]
-
-            # Remove rows where all cells are blank
-            data.dropna(axis=0,
-            how='all',
-            inplace=True,
-            )
-
-            # Reset row index to be a consistent series
-            data.index = range(len(data))
-
-        return df_dict
-
-
     def rename_columns(self, df_dict):
-        """Renames the columns to make them easier to work with (some
-        original column names contain spaces and parentheses).
+        """
+        Renames the columns to make them more programming-friendly
+        (i.e. no spaces or parentheses).
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            df_dict [dict]: columns renamed in each df
+            df_dict [dict]: columns have been renamed in each df
         """
 
         # Create list of new column names
@@ -125,8 +119,35 @@ class Data:
         return df_dict
 
 
+    def remove_blank_rows(self, df_dict):
+        """
+        Removes any rows where all cells have NaN values.
+
+        Args:
+            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+
+        Returns:
+            df_dict [dict]: blank rows have been removed from each df
+        """
+
+        for df in df_dict:
+            data = df_dict[df]
+
+            # Remove rows where all cells are blank
+            data.dropna(axis=0,
+            how='all',
+            inplace=True,
+            )
+
+            # Reset row index to be a consistent series
+            data.index = range(len(data))
+
+        return df_dict
+
+
     def replace_merged_cells(self, df_dict):
-        """Columns B-E (tumour group, specialist test group, CI code and
+        """
+        Columns B-E (tumour group, specialist test group, CI code and
         name) contain merged cells, which translate to 'NaN' values in
         df_dict. This function replaces the NaN values from merged cells
         with the appropriate value.
@@ -135,7 +156,7 @@ class Data:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            df_dict [dict]: values assigned to empty cells caused by merging
+            df_dict [dict]: cells which were merged in the xlsx now have values
         """
 
         for df in df_dict:
@@ -163,31 +184,35 @@ class Data:
         return df_dict
 
 
-    def default_blank_values(self, df_dict):
-        """Set the value of all empty cells to be 'Not specified'.
+    def add_new_fields(self, df_dict):
+        """
+        Creates 2 additional fields for each row in each df:
+
+        -in_house_test: currently 'Not specified' for all tests
+        -currently_provided: currently 'Not specified' for all tests
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            df_dict [dict]: blank cells replaced with default value
+            df_dict [dict]: new fields have been added to each dataframe
         """
 
         for df in df_dict:
+            data = df_dict[df]
 
-            # Set all empty cells to default value
-            df_dict[df].fillna('Not specified', inplace=True)
+            default_value = 'Not specified'
 
-            # Set cells containing only whitespace to default value
-            df_dict[df] = df_dict[df].applymap(
-                lambda x: 'Not specified' if str(x).strip() == '' else x
-                )
+            # Create new fields and set default values for every cell
+            data['in_house_test'] = default_value
+            data['currently_provided'] = default_value
 
         return df_dict
 
 
     def TEMPORARY_FIX_REMOVE_BLANK_TC(self, df_dict):
-        """Because test_code is the primary key for the GenomicTest model,
+        """
+        Because test_code is the primary key for the GenomicTest model,
         all records must have a unique value for this field. Version 2 of
         the test directory is problematic because many records have a blank
         test code value, meaning they all get assigned a non-unique value of
@@ -228,7 +253,8 @@ class Data:
 
 
     def TEMPORARY_FIX_REPLACE_BLANK_TC(self, df_dict):
-        """Because test_code is the primary key for the GenomicTest model,
+        """
+        Because test_code is the primary key for the GenomicTest model,
         all records must have a unique value for this field. Version 2 of
         the test directory is problematic because many records have a blank
         test code value, meaning they all get assigned a non-unique value of
@@ -292,39 +318,16 @@ class Data:
         return df_dict
 
 
-    def add_new_fields(self, df_dict):
-        """Creates 2 additional fields for each test in each df:
-
-        -in_house_test: currently 'Not specified' for all tests
-        -currently_provided: currently 'Not specified' for all tests
-
-        Args:
-            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
-
-        Returns:
-            df_dict [dict]: new fields added to each dataframe
-        """
-
-        for df in df_dict:
-            data = df_dict[df]
-
-            default_value = 'Not specified'
-
-            # Create new fields and set default values for every cell
-            data['in_house_test'] = default_value
-            data['currently_provided'] = default_value
-
-        return df_dict
-
-
     def combine_dataframes(self, df_dict):
-        """Combines the multiple dataframes in df_dict into one.
+        """
+        Combines all of the dfs in df_dict into a single dataframe.
 
         Args:
             df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            single_df [pandas df]: created by concatenating dfs in df_dict
+            single_df [pandas df]: a single df, created by concatenating all
+                the dfs in df_dict
         """
 
         # Combine all dataframes from df_dict into one
@@ -337,55 +340,102 @@ class Data:
         return single_df
 
 
-    def all_cells_to_strings(self, single_df):
-        """Converts all cells in single_df into strings, strips excess
-        whitespace.
+    def default_blank_values(self, single_df):
+        """Set the value of all empty cells to be 'Not specified'.
 
         Args:
-            single_df [pandas df]: contains NGTDC data
+            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
 
         Returns:
-            single_df [pandas df]: all cells are now stripped strings
+            df_dict [dict]: blank cells replaced with default value
+        """
+
+        # Define the default value for blank cells
+        blank_value = 'Not specified'
+
+        # Set all empty cells to have the default value
+        single_df.fillna(blank_value, inplace=True)
+
+        # Also set cells to the default value if they strip to an empty string
+        single_df = single_df.applymap(
+            lambda x: 'Not specified' if str(x).strip() == '' else x
+        )
+
+        return single_df
+
+
+    def replace_newlines(self, single_df):
+        """
+        All newline characters in any cell are replaced with spaces
+        because they mess up formatting.
+
+        Args:
+            single_df [pandas df]: dataframe containing NGTDC data
+
+        Returns:
+            single_df [pandas df]: newline characters are replaced with spaces
+        """
+
+        # Replace all newline characters in any dataframe cell with spaces
+        single_df = single_df.applymap(lambda x: x.replace('\n', ' '))
+
+        return single_df
+
+
+    def all_cells_to_strings(self, single_df):
+        """
+        Converts all cells into strings and strips excess whitespace.
+
+        Args:
+            single_df [pandas df]: dataframe containing NGTDC data
+
+        Returns:
+            single_df [pandas df]: all cells changed to stripped strings
         """
 
         # convert every cell value to a string, and strip whitespace
-        single_df = single_df.applymap(str)
-        single_df = single_df.applymap(lambda x: x.strip())
+        single_df = single_df.applymap(lambda x: str(x).strip())
 
         return single_df
 
 
     def targets_to_lists(self, single_df):
-        """Each cell in 'targets_essential' and 'targets_desirable' is
+        """
+        Each cell in 'targets_essential' and 'targets_desirable' is
         currently a string, and needs to be converted into a list. Each
-        element of the list should be a string representing a single target
-        from that cell, e.g.
+        list element will be a string representing a single target from
+        that cell.
         
-        'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
+        e.g. 'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
 
         Text is converted to uppercase to avoid duplication issues 
         (e.g. '1q2' vs. '1Q2').
 
         Some cells are awkward and need to be managed separately:
-        -Empty cells become ['NOT APPLICABLE']
-        -Targets which contain sub-lists have to be kept as a whole string
-        -Paired brackets around a target, or unpaired brackets at a target
-        end, are removed
+        -Empty cells become ['Not specified'].
+        -Targets containing sub-lists have to be kept as a whole string.
+        -Paired brackets around a target, or unpaired brackets at a
+        target end, are removed.
 
         Args:
-            single_df [pandas df]: contains NGTDC data
+            single_df [pandas df]: dataframe containing NGTDC data
 
         Returns:
-            single_df [pandas df]: cells in targets columns are now lists
+            single_df [pandas df]: each cell in the targets column is
+                converted from a string to a list of strings
         """
 
-        # This version has two columns which are lists of targets
-        fields = ['targets_essential', 'targets_desirable']
+        # SORT OUT ALL THE COMMENTS
+        # THE LAST LINE STILL HAS 'FIELD' IN, SORT THIS OUT
 
-        for field in fields:
-            i = 0
+        # Iterate over each row
+        # For each row, iterate over the 'targets_essential' and
+        # 'targets_desirable' fields
 
-            for cell in single_df[field]:
+        i = 0
+        for index, row in single_df.iterrows():
+            for cell in [row['targets_essential'], row['targets_desirable']]:
+
                 uppercase = str(cell).upper()
 
                 # If a cell is empty, make it a single-element list
