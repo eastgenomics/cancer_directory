@@ -11,6 +11,9 @@ them into a single dataframe, and format the data for subsequent
 insertion into a database. The script is accessed by the seed.py
 script.
 
+Note: This script is not appropriate for use with the draft second version 
+of the test directory due to the additional fields included in that file.
+
 Functions:
     Get data as a dictionary of pandas dataframes
     Remove any completely blank rows
@@ -24,12 +27,13 @@ Functions:
     Convert cells in the 'targets' column into lists of targets
 
 Inputs:
-    filepath: path to an .xlsx file containing data for a version of the NGTDC
+    filepath: path to .xlsx file containing NGTDC version 1 or 2 data
 
 Returns:
-    single_df [pandas dataframe]: data converted into a dataframe and cleaned
+    single_df [pandas dataframe]: cleaned data in dataframe format
 
 """
+
 
 import pandas as pd
 
@@ -41,7 +45,7 @@ class Data:
 
     def get_xl_data(self, filepath):
         """
-        Accesses a .xlsx file containing data for a version of the
+        Accesses an .xlsx file containing data for version 1 or 2 of the
         NGTDC, and converts each worksheet into a pandas dataframe.
         Creates a dictionary of these dataframes named df_dict.
 
@@ -75,14 +79,14 @@ class Data:
 
     def rename_columns(self, df_dict):
         """
-        Renames the columns to make them more programming-friendly
+        Renames dataframe columns to make them more programming-friendly
         (i.e. no spaces or parentheses).
 
         Args:
-            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+            df_dict [dict]: dictionary of pandas DFs containing NGTDC data
 
         Returns:
-            df_dict [dict]: columns have been renamed in each df
+            df_dict [dict]: columns have been renamed across DFs
         """
 
         # Create a list of the new column names
@@ -97,11 +101,11 @@ class Data:
             'eligibility',
         ]
 
-        # Iterate over each df in the dict
+        # Iterate over each DF in the dict
         for df in df_dict:
             data = df_dict[df]
 
-            # Rename the df's columns
+            # Rename the DF's columns
             data.columns = renamed_columns
 
         return df_dict
@@ -109,13 +113,13 @@ class Data:
 
     def remove_blank_rows(self, df_dict):
         """
-        Removes any rows where all cells have NaN values.
+        Removes any rows in which all cells have NaN values.
 
         Args:
-            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+            df_dict [dict]: dictionary of pandas DFs containing NGTDC data
 
         Returns:
-            df_dict [dict]: blank rows have been removed from each df
+            df_dict [dict]: blank rows removed from each DF
         """
 
         for df in df_dict:
@@ -128,7 +132,7 @@ class Data:
                 inplace=True,
             )
 
-            # Reset the df's row index to be a consistent series
+            # Reset the DF's row index to be a consistent series
             data.index = range(len(data))
 
         return df_dict
@@ -138,20 +142,20 @@ class Data:
         """
         Columns A and B (clinical indication code and name) contain
         merged cells in the .xlsx files, which translate to 'NaN' values
-        in the dfs. This function replaces those NaN values with the
+        in the DFs. This function replaces those NaN values with the
         appropriate value.
 
         Args:
-            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+            df_dict [dict]: dictionary of pandas DFs containing NGTDC data
 
         Returns:
-            df_dict [dict]: cells which were merged in the xlsx now have values
+            df_dict [dict]: previously merged empty cells now have values
         """
 
         for df in df_dict:
             data = df_dict[df]
 
-            # Iterate over the rows of the current df
+            # Iterate over the rows of the current DF
             i = 0
             for index, row in data.iterrows():
 
@@ -171,14 +175,14 @@ class Data:
 
     def add_new_fields(self, df_dict):
         """
-        Creates 3 additional fields for each row in each df:
+        Creates 3 additional fields for each row in each DF:
 
         -cancer_type: the name of the parent worksheet e.g. 'Sarcomas'
         -in_house_test: currently 'Not specified' for all tests
         -currently_provided: currently 'Not specified' for all tests
 
         Args:
-            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+            df_dict [dict]: dictionary of pandas DFs containing NGTDC data
 
         Returns:
             df_dict [dict]: new fields have been added to each dataframe
@@ -191,7 +195,7 @@ class Data:
             # Define a default value for currently_provided and in_house_test
             default_value = 'Not specified'
 
-            # Get the worksheet name for the current df
+            # Get the worksheet name for the current DF
             key = str(df).strip()
 
             # Set cancer type values to be consistent
@@ -204,7 +208,7 @@ class Data:
             else:
                 cancer_type = key
 
-            # Create the fields and set their values for every cell in the df
+            # Create the fields and set their values for every cell in the DF
             data['cancer_type'] = cancer_type
             data['in_house_test'] = default_value
             data['currently_provided'] = default_value
@@ -214,17 +218,17 @@ class Data:
 
     def combine_dataframes(self, df_dict):
         """
-        Combines all of the dfs in df_dict into a single dataframe.
+        Combines all of the DFs in df_dict into a single dataframe.
 
         Args:
-            df_dict [dict]: dictionary of pandas dfs containing NGTDC data
+            df_dict [dict]: dictionary of pandas DFs containing NGTDC data
 
         Returns:
-            single_df [pandas df]: a single df, created by concatenating all
-                the dfs in df_dict
+            single_df [pandas df]: a single DF, created by concatenating all
+                the DFs in df_dict
         """
 
-        # Combine all the dfs in df_dict into a single dataframe
+        # Combine all the DFs in df_dict into a single dataframe
         single_df = pd.concat(
             df_dict,
             ignore_index=True,
@@ -242,7 +246,7 @@ class Data:
             single_df [pandas df]: dataframe containing NGTDC data
 
         Returns:
-            single_df [pandas df]: blank cells are replaced with default value
+            single_df [pandas df]: blank cells replaced with a default value
         """
 
         # Define the default value for blank cells
