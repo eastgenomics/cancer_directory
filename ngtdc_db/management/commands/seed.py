@@ -111,11 +111,9 @@ class Command(BaseCommand):
         single_df_2 = data.default_blank_values(single_df_1)
         single_df_3 = data.replace_newlines(single_df_2)
         single_df_4 = data.all_cells_to_strings(single_df_3)
-        single_df_5 = data.target_lists_notspecified(single_df_4)
-        single_df_6 = data.target_lists_sublists(single_df_5)
-        single_df_7 = data.target_lists_other(single_df_6)
+        single_df_5 = data.targets_to_lists(single_df_4)
 
-        return single_df_7
+        return single_df_5
 
 
     def handle(self, *args, **kwargs):

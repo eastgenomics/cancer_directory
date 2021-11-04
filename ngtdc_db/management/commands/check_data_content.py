@@ -121,15 +121,16 @@ class Command(BaseCommand):
             if ci_code != test_code_prefix:
 
                 # Define an error message
-                error_message = (
-                    'ci code/test code problem at index {i}:'.format(i=index),
-                    ci_code,
-                    test_code
+                message =  '\nci/test code mismatch: {a} vs {b} at index {i}'.\
+                    format(
+                    a = ci_code,
+                    b = test_code,
+                    i=index,
                     )
 
                 # Write this to the output text file
                 with open('data_contents.txt', 'a') as file_object:
-                    file_object.write(error_message)
+                    file_object.write(message)
 
 
     def output_field_info(self, single_df):
@@ -178,7 +179,7 @@ class Command(BaseCommand):
                 # Iterate over cells in the column
                 for cell in single_df[field]:
 
-                    # Iterate over elements in the cell (that should be a list)
+                    # Iterate over cell (should be a list) elements
                     for element in cell:
 
                         # Add non-blank unique elements to the 'unique' list
@@ -284,13 +285,11 @@ class Command(BaseCommand):
         single_df_2 = data.default_blank_values(single_df_1)
         single_df_3 = data.replace_newlines(single_df_2)
         single_df_4 = data.all_cells_to_strings(single_df_3)
-        single_df_5 = data.target_lists_notspecified(single_df_4)
-        single_df_6 = data.target_lists_sublists(single_df_5)
-        single_df_7 = data.target_lists_other(single_df_6)
+        single_df_5 = data.targets_to_lists(single_df_4)
 
         # Run the single-dataframe check
-        self.check_ci_test_codes(single_df_7)
-        self.output_field_info(single_df_7)
+        self.check_ci_test_codes(single_df_5)
+        self.output_field_info(single_df_5)
 
 
     def handle(self, *args, **kwargs):
