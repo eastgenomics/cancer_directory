@@ -23,7 +23,8 @@ import ngtdc_db.management.commands.insert as inserter
 
 
 class Command(BaseCommand):
-    help = "Seed the database"
+    help = "Call functions from get_data.py to import data from an .xlsx \
+    test directory file, clean it, and insert it into the Django database."
     
     def add_arguments(self, parser):
         """
@@ -41,7 +42,8 @@ class Command(BaseCommand):
 
     def clean_data(self, version):
         """
-        Call the functions in get_data.py on the supplied directory version.
+        Call the functions in get_data.py on the .xlsx file for the
+        specified test directory version.
 
         Args:
             version [string]: test directory version ('1', '2', or '2D')
@@ -54,34 +56,31 @@ class Command(BaseCommand):
         xl_file = ''
         data = ''
 
-        # Define the file and script to use for version 1
+        # Define the file and script to apply for version 1
         if version == '1':
 
             xl_file = (
                 "National-Genomic-Test-Directory-Cancer-November-2020-21.xlsx"
                 )
-
             data = get_data.Data(xl_file)
             print('Output for version 1 file:', xl_file)
 
-        # Define the file and script to use for version 2
+        # Define the file and script to apply for version 2
         elif version == '2':
 
             xl_file = (
                 "National-genomic-test-directory-cancer-October-2021-22-.xlsx"
                 )
-
             data = get_data.Data(xl_file)
             print('Output for version 2 file:', xl_file)
 
-        # Define the file and script to use for the DRAFT version 2 
+        # Define the file and script to apply for the DRAFT version 2 
         elif version == '2D':
 
             xl_file = (
                 "CONFIDENTIAL-Final-National-Genomic-"
                 "Test-Directory-Cancer-20-21-v2_pstb.xlsx"
                 )
-
             data = get_data_2D.Data(xl_file)
             print('Output for version 2 DRAFT:', xl_file)
 
@@ -89,28 +88,34 @@ class Command(BaseCommand):
         else:
             raise ValueError('Version must be 1, 2 or 2D.')
 
-        # Functions which apply to a dictionary of pandas dataframes
+        # Apply first set of functions from get_data.py
+        #(Those which apply to a dictionary of dataframes)
+
         df_dict_1 = data.get_xl_data(xl_file)
         df_dict_2 = data.rename_columns(df_dict_1)
         df_dict_3 = data.remove_blank_rows(df_dict_2)
         df_dict_4 = data.replace_merged_cells(df_dict_3)
         df_dict_5 = data.add_new_fields(df_dict_4)
 
-        # The version 2 draft requires an additional function
+        # Draft version 2 requires an additional function because it's awkward
         if version == '2D':
             df_dict_6 = data.TEMPORARY_FIX_REPLACE_BLANK_TC(df_dict_5)
         
         else:
             df_dict_6 = df_dict_5
 
-        # Functions which apply to a single consolidated dataframe
+        # Apply second set of functions from get_data.py
+        #(Those which apply to a single consolidated dataframe)
+
         single_df_1 = data.combine_dataframes(df_dict_6)
         single_df_2 = data.default_blank_values(single_df_1)
         single_df_3 = data.replace_newlines(single_df_2)
         single_df_4 = data.all_cells_to_strings(single_df_3)
-        single_df_5 = data.targets_to_lists(single_df_4)
+        single_df_5 = data.target_lists_notspecified(single_df_4)
+        single_df_6 = data.target_lists_sublists(single_df_5)
+        single_df_7 = data.target_lists_other(single_df_6)
 
-        return single_df_5
+        return single_df_7
 
 
     def handle(self, *args, **kwargs):
@@ -119,16 +124,19 @@ class Command(BaseCommand):
         the Django database.
         """
 
-        # If there is a version supplied, use this as the 'version' variable
+        # If a version was specified in the CL command, this is 'version'
+        
         if kwargs['file']:
-            version = kwargs['file']
+            version = kwargs['file'][0]
 
-            # Call clean_data to extract data from xlsx file and parse
+            # Call clean_data to extract data from the .xlsx file and clean it
+
             print('Creating Pandas dataframe from Excel file.')
-            cleaned_df = self.clean_data(version[0])
+            cleaned_df = self.clean_data(version)
             print('Pandas dataframe created.\n')
 
             # Call insert.py to insert cleaned data into the Django database
+
             print('Populating Django database models...')
             inserter.insert_data(cleaned_df, version)
             print('Database population completed.')

@@ -399,134 +399,201 @@ class Data:
         return single_df
 
 
-    def targets_to_lists(self, single_df):
+    """
+    Each cell in the targets column is currently a string, and needs to be
+    converted into a list. Each list element will be a string representing a
+    single target from that cell.
+
+    e.g. 'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
+
+    Text is converted to uppercase to avoid duplication issues 
+    (e.g. '1q2' vs. '1Q2').
+
+    There are some target cells which are dealt with in separate functions:
+        -Cells with the value 'Not specified'
+        -Cells containing sublists
+    
+    Args:
+        single_df [pandas df]: dataframe containing NGTDC data
+
+    Returns:
+        single_df [pandas df]: cells in the targets column are
+            converted from a string to a list of strings
+    """
+
+
+    def target_lists_notspecified(self, single_df):
         """
-        Each cell in 'targets_essential' and 'targets_desirable' is
-        currently a string, and needs to be converted into a list. Each
-        list element will be a string representing a single target from
-        that cell.
-        
-        e.g. 'NTRK1, NTRK2, NTRK3' becomes ['NTRK1', 'NTRK2', 'NTRK3']
-
-        Text is converted to uppercase to avoid duplication issues 
-        (e.g. '1q2' vs. '1Q2').
-
-        Some cells are awkward and need to be managed separately:
-        -Empty cells become ['Not specified'].
-        -Targets containing sub-lists have to be kept as a whole string.
-        -Paired brackets around a target, or unpaired brackets at a
-        target end, are removed.
-
-        Args:
-            single_df [pandas df]: dataframe containing NGTDC data
-
-        Returns:
-            single_df [pandas df]: each cell in the targets column is
-                converted from a string to a list of strings
+        Deals with cells in the targets column which have the value 
+        'Not specified'; converts them to a single-element list.
         """
 
-        # SORT OUT ALL THE COMMENTS
-        # THE LAST LINE STILL HAS 'FIELD' IN, SORT THIS OUT
+        # Define the new value to be used
+        new_value = ['Not specified', ]
 
-        # Iterate over each row
-        # For each row, iterate over the 'targets_essential' and
-        # 'targets_desirable' fields
+        # Define which fields to look at
+        fields = ['targets_essential', 'targets_desirable']
 
-        i = 0
+        # Iterate over these fields in each row
         for index, row in single_df.iterrows():
-            for cell in [row['targets_essential'], row['targets_desirable']]:
+            for field in fields:
+                cell = row[field]
 
+                # If a cell's value is 'Not specified', replace it
+                if cell == 'Not specified':
+                    single_df.loc[index, field] = new_value
+
+        return single_df
+
+
+    def target_lists_sublists(self, single_df):
+        """
+        Deals with cells in the targets column which have awkward commas;
+        converts them to a single-element list.
+        """
+
+        # Define which fields to look at
+        fields = ['targets_essential', 'targets_desirable']
+
+        # Iterate over these fields in each row
+        for index, row in single_df.iterrows():
+            for field in fields:
+
+                # Ignore any cells which are already lists of targets
+                if type(row[field]) == list:
+                    continue
+
+                # Define the current cell, convert to uppercase
+                cell = row[field]
                 uppercase = str(cell).upper()
 
-                # If a cell is empty, make it a single-element list
-                if cell == 'Not specified':
-                    new_cell_contents = ['Not specified',]
+                # If the cell is an awkward case...
+                # (Note: must be 'types' not 'type' to exclude 'karyotype')
 
-                # If splitting on ',' is a problem, take the whole cell
-                # (Note: must be 'types' not 'type', to exclude 'karyotype')
-                elif ('TRANSCRIPTS' in uppercase) or \
+                if ('TRANSCRIPTS' in uppercase) or \
                     ('TYPES' in uppercase) or \
                     (uppercase == '1P, 3, 6, 8'):
 
-                    new_cell_contents = [uppercase,]
+                    # Make the cell's value the sole element of a new list
+                    new_value = [uppercase, ]
 
-                # For cells which are a 'standard' list of targets:
+                    # Replace the original string value with this value
+                    single_df.loc[index, field] = new_value
+
+        return single_df
+
+
+    def target_lists_other(self, single_df):
+        """
+        The main function for converting target cell strings to lists. There
+        are still several awkward cases which need cleaning, like cells
+        containing the PAR1 region, those with unnecessary text, or those
+        with inappropriate brackets.
+
+        There is a lot to do here, so this function is a bit of a monster.
+        """
+
+        # Define which fields to look at
+        fields = ['targets_essential', 'targets_desirable']
+
+        # Look at these fields over each row of the database
+        for index, row in single_df.iterrows():
+            for field in fields:
+
+                # Ignore any cells which are already lists of targets
+                if type(row[field]) == list:
+                    continue
+
+                # Define the current cell being looked at, convert to uppercase
+                cell = row[field]
+                uppercase = str(cell).upper()
+
+                # Initialise an empty list to be the cell's new value
+                new_value = []
+
+                # If the cell contains the PAR1 region (awkward because it has
+                # a sublist), extract this substring to be the first element of
+                # the new list. Then deal with the cell remainder separately.
+
+                par1_region = 'PAR1 REGION (CRLF2, CSF2RA, IL3RA)'
+
+                if par1_region in uppercase:                
+                    new_value.append(par1_region)
+                    old_cell_string = uppercase.replace(par1_region, '')
+
                 else:
-                    new_cell_contents = []
+                    old_cell_string = uppercase
 
-                    # If a cell contains PAR1 region (awkward due to commas),
-                    par1_region = 'PAR1 REGION (CRLF2, CSF2RA, IL3RA)'
+                # old_cell_string is a string that may need more cleaning.
+                # to_split is the string that will be split into a list.
 
-                    if par1_region in uppercase:                
+                # Some cells contain unnecessary text
+                text_to_remove = [
+                    'TO INCLUDE DETECTION OF',
+                    'TO INCLUDE:',
+                    'TO INCLUDE',
+                    'E.G.',
+                    ]
 
-                        # Add this region to the cell's new list separately
-                        new_cell_contents.append(par1_region)
-
-                        # Remove it from the old cell value
-                        cell_contents = uppercase.replace(par1_region, '')
-
-                    else:
-                        cell_contents = uppercase
-
-                    # If the cell contains unnecessary preamble, remove it
-                    if 'TO INCLUDE DETECTION OF' in cell_contents:
-                        to_split = cell_contents.replace(
-                            'TO INCLUDE DETECTION OF', '')
-
-                    elif 'TO INCLUDE:' in cell_contents:
-                        to_split = cell_contents.replace('TO INCLUDE:', '')
-
-                    elif 'TO INCLUDE' in cell_contents:
-                        to_split = cell_contents.replace('TO INCLUDE', '')
-
-                    elif 'E.G.' in cell_contents:
-                        to_split = cell_contents.replace('E.G.', '')
+                # If the cell contains one of these substrings, remove it
+                for extra_text in text_to_remove:
+                    if extra_text in old_cell_string:
+                        to_split = old_cell_string.replace(extra_text, '')
 
                     else:
-                        to_split = cell_contents
+                        to_split = old_cell_string
 
-                    # Split cell contents into a list on a comma delimiter
-                    old_cell_target_list = to_split.split(',')
+                # Split the cleaned string into a list on a comma delimiter
 
-                    for element in old_cell_target_list:
-                        # Strip whitespace, then skip any blank elements
-                        stripped = element.strip()
-                        if stripped == '':
-                            continue
+                old_cell_list = to_split.split(',')
 
-                        # If element is contained in brackets, remove them
-                        elif ((stripped[0] == '(') and (stripped[-1] == ')'))\
-                                or \
-                            ((stripped[0] == '[') and (stripped[-1] == ']')):
+                # Now go through and clean each element of this new list 
 
-                            target = stripped[1:-1]
-                            new_cell_contents.append(target)
+                for element in old_cell_list:
 
-                        # If element starts with an unpaired bracket, remove it
-                        elif ((stripped[0] == '[') and (']' not in stripped))\
-                                or \
-                            ((stripped[0] == '(') and (')' not in stripped)):
+                    # Strip excess whitespace from each element
+                    stripped = element.strip()
 
-                            target = stripped[1:]
-                            new_cell_contents.append(target)
+                    # Ignore any elements which are empty strings
+                    if stripped == '':
+                        continue
 
-                        # If element ends with an unpaired bracket, remove it
-                        elif ((stripped[-1] == ']') and ('[' not in stripped))\
-                                or \
-                            ((stripped[-1] == ')') and ('(' not in stripped)):
+                    # Get rid of any unnecessary brackets in each element:
+                    # If the string is fully contained in brackets,
 
-                            target = stripped[:-1]
-                            new_cell_contents.append(target)
+                    elif ((stripped[0] == '(') and (stripped[-1] == ')'))\
+                            or \
+                        ((stripped[0] == '[') and (stripped[-1] == ']')):
 
-                        # Otherwise just append to cell's new list
-                        else:
-                            target = stripped
-                            new_cell_contents.append(target)
+                        target = stripped[1:-1]
+                        new_value.append(target)
 
-                # Replace cell's old string value with new_cell_contents list
-                single_df.iloc[i].loc[field] = new_cell_contents
-                    
-                i += 1
+                    # If the string starts with an unpaired bracket,
+
+                    elif ((stripped[0] == '[') and (']' not in stripped))\
+                            or \
+                        ((stripped[0] == '(') and (')' not in stripped)):
+
+                        target = stripped[1:]
+                        new_value.append(target)
+
+                    # Or if the string ends with an unpaired bracket.
+
+                    elif ((stripped[-1] == ']') and ('[' not in stripped))\
+                            or \
+                        ((stripped[-1] == ')') and ('(' not in stripped)):
+
+                        target = stripped[:-1]
+                        new_value.append(target)
+
+                    # Otherwise just append to cell's new list
+
+                    else:
+                        target = stripped
+                        new_value.append(target)
+
+                # Replace cell's old string value with new_value list
+                single_df.loc[index, field] = new_value
 
         return single_df
 

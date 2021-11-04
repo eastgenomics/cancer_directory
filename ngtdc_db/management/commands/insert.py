@@ -1,3 +1,20 @@
+#!usr/bin/env python
+
+"""
+Called within seed.py. Looks through each row of the cleaned pandas
+dataframe generated earlier in that script, and inserts each cell into the
+relevant database model.
+
+Args:
+	cleaned_data [pandas dataframe]: generated earlier in the seed.py script
+		which calls the insert_data function
+
+	directory_version [string]: specified in the CL call to seed.py. Can
+		currently be '1', '2', or '2D'.
+
+Doesn't return anything, but updates the Django database.
+"""
+
 import pandas as pd
 from django.contrib.auth.models import User
 
@@ -20,8 +37,10 @@ from ngtdc_db.models import (
 def insert_data(cleaned_data, directory_version):
 	"""Insert data into the database"""
 	
-	# Define a tab-separated file containing HGNC data, and read into a df
+	# Specify the text file containing the HGNC website API dump
 	hgnc_file = 'hgnc_dump_210727.txt'
+
+	# Read this file into a pandas dataframe
 	df = pd.read_csv(hgnc_file, sep='\t')
 
 	for index, row in cleaned_data.iterrows():
@@ -48,7 +67,7 @@ def insert_data(cleaned_data, directory_version):
 				technology = row['technology'],
 				)
 
-			if directory_version == '1':
+			if directory_version == ('1' or '2'):
 
 				# The specialist_test_group, commissioning_category,
 				# optimal_family_structure, and citt_comment fields do not
@@ -93,7 +112,7 @@ def insert_data(cleaned_data, directory_version):
 						tt_code = '-',
 						)
 
-			elif directory_version == '2':
+			elif directory_version == '2D':
 
 				# Create SpecialistTestGroup table records
 				specialist_test_group, created = SpecialistTestGroup.objects.\
@@ -177,20 +196,20 @@ def insert_data(cleaned_data, directory_version):
 
 def get_hgnc(df, single_target):
     """Get associated HGNC ID (where it exists) for each genomic test
-	target. Gets HGNC IDs from tab-delimited .txt file sourced from HGNC
-	website.
+	target, using tab-delimited .txt dump file sourced from HGNC website.
 
 	Args:
 		df [dataframe]: pandas dataframe of HGNC website data 
-		single_target [string]: single target of a genomic test
+		single_target [string]: string value for single gene target
 
 	Returns:
 		hgnc_id [string]: target's HGNC ID if it exists, 'None' otherwise
 	"""
 
+	# If there is a row where the target is the official gene symbol,
     try:
-		# If there is a row where the supplied target is the official gene
-		# symbol, get that row's index
+		
+		# Get that row's index
         target_index = df.index[df['symbol'] == single_target]
 
 		# Retrieve the HGNC ID at that row index
@@ -200,24 +219,29 @@ def get_hgnc(df, single_target):
     
 	# If there is no row where the target is the official symbol, 
     except IndexError:
+
+		# Create a sentry variable for whether an ID has been found yet
         has_id = False
         i = 0
 
-		# Look in the field for previous official gene symbols instead
+		# Look through the 'previous official gene symbols' field
         for value in df['prev_symbol']:
 
 			# If the target appears in a value in this column,
             if single_target in str(value):
+
+				# The associated HGNC ID can be used for this target
                 has_id = True
 
-				# Retrieve the associated HGNC ID
+				# Retrieve and return the associated HGNC ID
                 hgnc_id = df.iloc[i].loc['hgnc_id']
 
                 return hgnc_id
             
             i += 1
         
-		# If the target doesn't appear as either an official or previous gene
-		# symbol, its HGNC ID value is 'None'
+		# If the target isn't either an official or previous gene symbol,
         if not has_id:
+
+			# Set the HGNC ID value to 'None'
             return 'None'

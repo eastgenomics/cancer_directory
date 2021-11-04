@@ -1,3 +1,10 @@
+#!usr/bin/env python
+
+"""
+Clears all records from all models in the database.
+"""
+
+
 from django.core.management.base import BaseCommand
 
 from ngtdc_db.models import (
@@ -17,9 +24,11 @@ from ngtdc_db.models import (
 
 
 class Command(BaseCommand):
-    help = "Clear all database records"
+    help = "Clear all records from all models in the database."
 
     def handle(self, *args, **kwargs):
+
+        # Specify all models of the database
         models = [
             CancerType,
             ClinicalIndication,
@@ -35,5 +44,6 @@ class Command(BaseCommand):
             DesirableTarget,
             ]
 
+        # Delete all records in each model
         for model in models:
             model.objects.all().delete()
