@@ -10,10 +10,10 @@
             <strong>Version currently displayed: </strong>
 
             {% if directory_version == '2' %}
-                July 2021 (most recent)
+                Version 2: 2021 (most recent)
             
             {% elif directory_version == '1' %}
-                November 2020
+                Version 1: 2020
 
             {% endif %}
 
@@ -22,10 +22,10 @@
             <ul>
 
             {% if directory_version == '2' %}
-                <li><a href='/v1/'>November 2020</a></li>
+                <li><a href='/v1/'>Version 1: 2020</a></li>
             
             {% elif directory_version == '1' %}
-                <li><a href='/'>July 2021 (most recent version)</a></li>
+                <li><a href='/'>Version 2: 2021 (most recent version)</a></li>
                 
             {% endif %}
 

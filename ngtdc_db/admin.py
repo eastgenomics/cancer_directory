@@ -2,16 +2,11 @@ from django.contrib import admin
 from .models import (
 	CancerType,
 	ClinicalIndication,
-	SpecialistTestGroup,
 	TestScope,
 	Technology,
-	CommissioningCategory,
-	OptimalFamilyStructure,
-	CITTComment,
 	Target,
 	GenomicTest,
 	EssentialTarget,
-	DesirableTarget,
 	)
 
 
@@ -32,24 +27,18 @@ class GenomicTestAdmin(admin.ModelAdmin):
         'test_name',
         'scope_id',
         'tech_id',
-        'inhouse_technology',
         'eligibility',
         'currently_provided',
-        'family_id',
-        'specialist_id',
-        'cc_id',
-        'citt_id',
-        'tt_code',
+        'inhouse_technology',
         )
         
-    filter_horizontal = ('targets_essential', 'targets_desirable')
+    filter_horizontal = ('targets_essential',)
 
     list_filter = (
         'scope_id',
         'tech_id',
         'inhouse_technology',
         'currently_provided',
-        'family_id',
         )
 
 
@@ -60,8 +49,3 @@ admin.site.register(TestScope)
 admin.site.register(Technology)
 admin.site.register(Target)
 admin.site.register(EssentialTarget)
-admin.site.register(DesirableTarget)
-admin.site.register(SpecialistTestGroup)
-admin.site.register(CommissioningCategory)
-admin.site.register(OptimalFamilyStructure)
-admin.site.register(CITTComment)

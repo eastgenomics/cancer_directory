@@ -10,15 +10,14 @@ Called from the command line with the command:
 
     python manage.py seed -f <DIRECTORY VERSION>
 
-The directory version supplied can currently be 1, 2, or 2D (for the
-unofficial draft of the second directory version).
+The directory version supplied can currently be 1 or 2. This script does not
+support version '2D' (the draft second version).
 """
 
 
 import pandas as pd
 from django.core.management.base import BaseCommand
 import ngtdc_db.management.commands.get_data as get_data
-import ngtdc_db.management.commands.get_data_2D as get_data_2D
 import ngtdc_db.management.commands.insert as inserter
 
 
@@ -46,7 +45,7 @@ class Command(BaseCommand):
         specified test directory version.
 
         Args:
-            version [string]: test directory version ('1', '2', or '2D')
+            version [string]: test directory version ('1' or '2')
         
         Returns:
             single_df [pandas dataframe]: cleaned test directory data     
@@ -63,7 +62,7 @@ class Command(BaseCommand):
                 "National-Genomic-Test-Directory-Cancer-November-2020-21.xlsx"
                 )
             data = get_data.Data(xl_file)
-            print('Output for version 1 file:', xl_file)
+            print('Using file for version 1:', xl_file)
 
         # Define the file and script to apply for version 2
         elif version == '2':
@@ -72,21 +71,11 @@ class Command(BaseCommand):
                 "National-genomic-test-directory-cancer-October-2021-22-.xlsx"
                 )
             data = get_data.Data(xl_file)
-            print('Output for version 2 file:', xl_file)
-
-        # Define the file and script to apply for the DRAFT version 2 
-        elif version == '2D':
-
-            xl_file = (
-                "CONFIDENTIAL-Final-National-Genomic-"
-                "Test-Directory-Cancer-20-21-v2_pstb.xlsx"
-                )
-            data = get_data_2D.Data(xl_file)
-            print('Output for version 2 DRAFT:', xl_file)
+            print('Using file for version 2:', xl_file)
 
         # Raise an error if any other version number is supplied
         else:
-            raise ValueError('Version must be 1, 2 or 2D.')
+            raise ValueError('Version must be 1 or 2.')
 
         # Apply first set of functions from get_data.py
         #(Those which apply to a dictionary of dataframes)
@@ -97,17 +86,10 @@ class Command(BaseCommand):
         df_dict_4 = data.replace_merged_cells(df_dict_3)
         df_dict_5 = data.add_new_fields(df_dict_4)
 
-        # Draft version 2 requires an additional function because it's awkward
-        if version == '2D':
-            df_dict_6 = data.TEMPORARY_FIX_REPLACE_BLANK_TC(df_dict_5)
-        
-        else:
-            df_dict_6 = df_dict_5
-
         # Apply second set of functions from get_data.py
         #(Those which apply to a single consolidated dataframe)
 
-        single_df_1 = data.combine_dataframes(df_dict_6)
+        single_df_1 = data.combine_dataframes(df_dict_5)
         single_df_2 = data.default_blank_values(single_df_1)
         single_df_3 = data.replace_newlines(single_df_2)
         single_df_4 = data.all_cells_to_strings(single_df_3)

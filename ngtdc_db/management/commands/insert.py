@@ -10,7 +10,7 @@ Args:
 		which calls the insert_data function
 
 	directory_version [string]: specified in the CL call to seed.py. Can
-		currently be '1', '2', or '2D'.
+		currently be '1' or '2'.
 
 Doesn't return anything, but updates the Django database.
 """
@@ -21,23 +21,18 @@ from django.contrib.auth.models import User
 from ngtdc_db.models import (
 	CancerType,
 	ClinicalIndication,
-    SpecialistTestGroup,
 	TestScope,
 	Technology,
-	CommissioningCategory,
-	OptimalFamilyStructure,
-	CITTComment,
 	Target,
 	GenomicTest,
 	EssentialTarget,
-	DesirableTarget,
 	)
 
 
-def insert_data(cleaned_data, directory_version):
+def insert_data(cleaned_data, version):
 	"""Insert data into the database"""
 	
-	# Specify the text file containing the HGNC website API dump
+	# Specify the text file containing the HGNC website data dump
 	hgnc_file = 'hgnc_dump_210727.txt'
 
 	# Read this file into a pandas dataframe
@@ -67,32 +62,7 @@ def insert_data(cleaned_data, directory_version):
 				technology = row['technology'],
 				)
 
-			if directory_version == ('1' or '2'):
-
-				# The specialist_test_group, commissioning_category,
-				# optimal_family_structure, and citt_comment fields do not
-				# exist in directory version 1; so create a record of '-' for
-				# each of them
-
-				specialist_test_group, created = SpecialistTestGroup.objects.\
-					get_or_create(
-						specialist_test_group = '-',
-						)
-
-				commissioning, created = CommissioningCategory.objects.\
-					get_or_create(
-						commissioning = '-',
-						)
-
-				family_structure, created = OptimalFamilyStructure.objects.\
-					get_or_create(
-						family_structure = '-',
-						)
-
-				citt_comment, created = CITTComment.objects.get_or_create(
-					citt_comment = '-',
-					)
-
+			if version == '1':
 				# Create GenomicTest table version 1 records
 				genomic_test, created = GenomicTest.objects.\
 					get_or_create(
@@ -105,55 +75,22 @@ def insert_data(cleaned_data, directory_version):
 						currently_provided = row['currently_provided'],
 						inhouse_technology = row['in_house_test'],
 						eligibility = row['eligibility'],
-						specialist_id = specialist_test_group,
-						cc_id = commissioning,
-						family_id = family_structure,
-						citt_id = citt_comment,
-						tt_code = '-',
 						)
-
-			elif directory_version == '2D':
-
-				# Create SpecialistTestGroup table records
-				specialist_test_group, created = SpecialistTestGroup.objects.\
-					get_or_create(
-						specialist_test_group = row['specialist_group'],
-						)
-
-				# Create CommissioningCategory table records
-				commissioning, created = CommissioningCategory.objects.\
-					get_or_create(
-						commissioning = row['commissioning'],
-						)
-
-				# Create OptimalFamilyStructure table records
-				family_structure, created = OptimalFamilyStructure.objects.\
-					get_or_create(
-						family_structure = row['family_structure'],
-						)
-
-				# Create CITTComment table records
-				citt_comment, created = CITTComment.objects.get_or_create(
-					citt_comment = row['citt_comment'],
-					)
-
+			
+			elif version == '2':
 				# Create GenomicTest table version 2 records
-				genomic_test, created = GenomicTest.objects.get_or_create(
-					version = '2',
-					ci_code = ci,
-					test_code = row['test_code'],
-					test_name = row['test_name'],
-					specialist_id = specialist_test_group,
-					scope_id = test_scope,
-					tech_id = technology,
-					currently_provided = row['currently_provided'],
-					inhouse_technology = row['in_house_test'],
-					cc_id = commissioning,
-					eligibility = row['eligibility'],
-					family_id = family_structure,
-					citt_id = citt_comment,
-					tt_code = row['tt_code'],
-					)
+				genomic_test, created = GenomicTest.objects.\
+					get_or_create(
+						version = '2',
+						ci_code = ci,
+						test_code = row['test_code'],
+						test_name = row['test_name'],
+						scope_id = test_scope,
+						tech_id = technology,
+						currently_provided = row['currently_provided'],
+						inhouse_technology = row['in_house_test'],
+						eligibility = row['eligibility'],
+						)
 
 			# Iterate over individual targets in 'targets_essential' cell
 			for single_target in row['targets_essential']:
@@ -173,25 +110,6 @@ def insert_data(cleaned_data, directory_version):
 						test_id = genomic_test,
 						target_id = target,
 						)
-
-			# Do the same for desirable targets, but only for directory
-			# version 2 (version 1 doesn't have this field)
-
-			if directory_version == '2':
-				for single_target in row['targets_desirable']:
-
-					hgnc = get_hgnc(df, single_target)
-
-					target, created = Target.objects.get_or_create(
-						target = single_target,
-						hgnc_id = hgnc,
-						)
-
-					desirable_link, created = DesirableTarget.objects.\
-						get_or_create(
-							test_id = genomic_test,
-							target_id = target,
-							)
 
 
 def get_hgnc(df, single_target):

@@ -6,7 +6,6 @@ from .models import (
     GenomicTest,
     ClinicalIndication,
     EssentialTarget,
-    DesirableTarget,
     )
 
 from .tables import (
@@ -184,21 +183,12 @@ def v2_test_detail(request, test_id):
     test_record = GenomicTest.objects.select_related(
         'ci_code',
         'ci_code__cancer_id',
-        'specialist_id',
         'scope_id',
         'tech_id',
-        'cc_id',
-        'family_id',
-        'citt_id',
         ).get(test_id = test_id)
     
     # Get the essential targets associated with this test ID
     essential_links = EssentialTarget.objects.filter(
-        test_id = test_id
-        )
-
-    # Get the desirable targets associated with this test ID
-    desirable_links = DesirableTarget.objects.filter(
         test_id = test_id
         )
 
@@ -212,7 +202,6 @@ def v2_test_detail(request, test_id):
         {
             'test_record' : test_record,
             'essential_links' : essential_links, 
-            'desirable_links' : desirable_links,
             'directory_version' : directory_version,
         },
         )

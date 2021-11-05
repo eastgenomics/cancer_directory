@@ -9,11 +9,11 @@
             <strong>Version currently displayed: </strong>
 
             {% if directory_version == '2' %}
-                July 2021 (most recent)
+                Version 2: 2021 (most recent)
                 <br><a href='/'>Back to table view</a>
             
             {% elif directory_version == '1' %}
-                November 2020
+                Version 1: 2020
                 <br><a href='/v1/'>Back to table view</a>
 
             {% endif %}
@@ -25,13 +25,6 @@
                 {{ test_record.test_code }} {{ test_record.test_name }}
             </strong>
         </p>
-
-        {% if directory_version == '2' %}
-        <p>
-            <strong>Specialist Test Group</strong>
-            <br>{{ test_record.specialist_id }}
-        </p>
-        {% endif %}
 
         <p>
             <strong>Currently provided: </strong>{{ test_record.currently_provided}}
@@ -47,7 +40,6 @@
 
         <p>
             <strong>Clinical Indication</strong>
-            
             {% if directory_version == '2' %}
                 <br><a href='/v2/ci/{{ test_record.ci_code.ci_code }}/'>{{ test_record.ci_code }}</a>
             
@@ -55,7 +47,6 @@
                 <br><a href='/v1/ci/{{ test_record.ci_code.ci_code }}/'>{{ test_record.ci_code }}</a>
 
             {% endif %} 
-            
         </p>
 
         <p>
@@ -82,38 +73,6 @@
                 {% endfor %}
             </ul>
         </p>
-
-        {% if directory_version == '2' %}
-        <p>
-            <strong>Desirable Targets ({{ desirable_links.count }})</strong>
-            <br>HGNC ID in brackets if available
-            <ul>
-                {% for record in desirable_links %}
-                <li>{{ record.target_id }} ({{ record.target_id.hgnc_id }})</li>
-                {% endfor %}
-            </ul>
-        </p>
-
-        <p>
-            <strong>Optimal Family Structure</strong>
-            <br>{{ test_record.family_id }}
-        </p>
-
-        <p>
-            <strong>CITT Comment</strong>
-            <br>{{ test_record.citt_id }}
-        </p>
-
-        <p>
-            <strong>TT Code</strong>
-            <br>{{ test_record.tt_code }}
-        </p>
-        
-        <p>
-            <strong>Commissioning Category</strong>
-            <br>{{ test_record.cc_id }}
-        </p>
-        {% endif %}
 
         <p>
             <strong>Eligibility Criteria</strong>

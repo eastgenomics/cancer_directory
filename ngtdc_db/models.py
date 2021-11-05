@@ -40,22 +40,6 @@ class ClinicalIndication(models.Model):
         return '{a} {b}'.format(a=self.ci_code, b=self.ci_name)
 
 
-class SpecialistTestGroup(models.Model):
-    """Table of discrete specialist test group values"""
-
-    specialist_id = models.AutoField(
-        primary_key = True,
-        )
-
-    specialist_test_group = models.CharField(
-        verbose_name='Specialist Test Group',
-        max_length=25, 
-        )
-
-    def __str__(self):
-        return self.specialist_test_group
-
-
 class TestScope(models.Model):
     """Table of discrete test scope values"""
 
@@ -92,53 +76,6 @@ class Technology(models.Model):
 
     def __str__(self):
         return self.technology
-
-
-class CommissioningCategory(models.Model):
-    """Table of discrete commissioning category values"""
-
-    cc_id = models.AutoField(
-        primary_key = True,
-        )
-
-    commissioning = models.CharField(
-        verbose_name='Commissioning Category',
-        max_length=10, 
-        )
-
-    def __str__(self):
-        return self.commissioning
-
-
-class OptimalFamilyStructure(models.Model):
-    """Table of discrete optimal family structure values"""
-
-    family_id = models.AutoField(
-        primary_key = True,
-        )
-
-    family_structure = models.CharField(
-        verbose_name='Optimal Family Structure',
-        max_length=10, 
-        )
-
-    def __str__(self):
-        return self.family_structure
-
-
-class CITTComment(models.Model):
-    """Table of discrete CITT comment values"""
-
-    citt_id = models.AutoField(
-        primary_key = True,
-        )
-
-    citt_comment = models.TextField(
-        verbose_name='CITT Comment',
-        )
-
-    def __str__(self):
-        return self.citt_comment
 
 
 class Target(models.Model):
@@ -189,24 +126,11 @@ class GenomicTest(models.Model):
         verbose_name='Test Name',
         )
 
-    specialist_id = models.ForeignKey(
-        SpecialistTestGroup,
-        verbose_name = 'Specialist Test Group',
-        on_delete=models.CASCADE,
-        )
-
     targets_essential = models.ManyToManyField(
         Target,
         through='EssentialTarget',
         verbose_name='Targets (Essential)',
         related_name = 'EssentialTarget_related',
-        )
-
-    targets_desirable = models.ManyToManyField(
-        Target,
-        through='DesirableTarget',
-        verbose_name='Targets (Desirable)',
-        related_name = 'DesirableTarget_related',
         )
 
     scope_id = models.ForeignKey(
@@ -230,31 +154,8 @@ class GenomicTest(models.Model):
         verbose_name='In-House Test',
         )
 
-    cc_id = models.ForeignKey(
-        CommissioningCategory,
-        verbose_name = 'Commissioning Category',
-        on_delete=models.CASCADE,
-        )
-
     eligibility = models.TextField(
         verbose_name='Eligibility Criteria',
-        )
-
-    family_id = models.ForeignKey(
-        OptimalFamilyStructure,
-        verbose_name='Optimal Family Structure',
-        on_delete=models.CASCADE,
-        )
-
-    citt_id = models.ForeignKey(
-        CITTComment,
-        verbose_name = 'CITT Comment',
-        on_delete=models.CASCADE,
-        )
-
-    tt_code = models.CharField(
-        verbose_name = 'TT Code',
-        max_length=10,
         )
 
     def __str__(self):
@@ -263,25 +164,6 @@ class GenomicTest(models.Model):
 
 class EssentialTarget(models.Model):
     """Intermediate table linking each test to its essential targets"""
-
-    test_id = models.ForeignKey(
-        GenomicTest,
-        verbose_name='Test Code',
-        on_delete=models.CASCADE,
-        )
-
-    target_id = models.ForeignKey(
-        Target,
-        verbose_name='Target',
-        on_delete=models.CASCADE,
-        )
-
-    def __str__(self):
-        return '{a} {b}'.format(a=self.test_id, b=self.target_id)
-
-
-class DesirableTarget(models.Model):
-    """Intermediate table linking each test to its desirable targets"""
 
     test_id = models.ForeignKey(
         GenomicTest,

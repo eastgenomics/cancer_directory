@@ -55,12 +55,10 @@ class V2MainTable(tables.Table):
             'test_code',
             'test_name',
             'targets_essential',
-            'targets_desirable',
             'scope_id__test_scope',
             'tech_id__technology',
             'currently_provided',
             'inhouse_technology',
-            'tt_code',
             ]
 
 
@@ -125,8 +123,6 @@ class V2CIDetailTable(tables.Table):
         fields = [
             'test_code',
             'test_name',
-            'cc_id__commissioning',
             'eligibility',
             'targets_essential',
-            'targets_desirable',
             ]

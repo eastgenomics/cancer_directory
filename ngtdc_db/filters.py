@@ -252,17 +252,6 @@ class V2MainFilter(django_filters.FilterSet):
             )
         )
 
-    targets_desirable = django_filters.CharFilter(
-        field_name='targets_desirable__target',
-        label='Targets (Desirable)',
-        help_text = '(Optional test targets e.g. KRAS)',
-        lookup_expr='icontains',
-        distinct = True,
-        widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 24px',}
-            )
-        )
-
     scope_id = django_filters.ChoiceFilter(
         field_name='scope_id',
         label='Test Scope',
@@ -327,15 +316,6 @@ class V2MainFilter(django_filters.FilterSet):
             )
         )
 
-    tt_code = django_filters.CharFilter(
-        field_name='tt_code',
-        label='TT Code',
-        lookup_expr='icontains',
-        widget=forms.TextInput(
-            attrs={'style': 'width: 10vw; margin-left: 104px',}
-            )
-        )
-
     class Meta:
         model = GenomicTest
 
@@ -346,20 +326,14 @@ class V2MainFilter(django_filters.FilterSet):
             'test_code',
             'test_name',
             'targets_essential',
-            'targets_desirable',
             'scope_id',
             'tech_id',
             'currently_provided',
             'inhouse_technology',
-            'tt_code',
             ]
 
         exclude = [
-            'cc_id',
-            'specialist_id',
             'eligibility',
-            'family_id',
-            'citt_id',
             'currently_provided',
             'inhouse_technology',
             ]
